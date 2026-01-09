@@ -894,27 +894,6 @@
       document.getElementById('ai-modal-footer').classList.remove('hidden');
     }
 
-    window.closeAIModal = () => {
-      document.getElementById('ai-modal').classList.add('hidden');
-      aiSuggestions = null;
-    };
-
-    window.acceptAISuggestions = () => {
-      if (!aiSuggestions) return;
-      document.getElementById('title').value = aiSuggestions.improvedGoal;
-      if (aiSuggestions.improvedDescription) {
-        document.getElementById('description').value = aiSuggestions.improvedDescription;
-      }
-      editingMilestones = aiSuggestions.suggestedMilestones.map((m, i) => ({
-        id: Date.now().toString() + i,
-        title: m.title,
-        targetPercent: m.targetPercent,
-        targetDate: m.targetDate
-      }));
-      renderMilestoneInputs();
-      closeAIModal();
-    };
-
     // Resolution form
     document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
