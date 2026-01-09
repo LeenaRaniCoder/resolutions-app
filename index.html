@@ -5,611 +5,207 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>2026 Resolutions</title>
   <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
-
+    * { margin: 0; padding: 0; box-sizing: border-box; }
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       min-height: 100vh;
       padding: 2rem;
     }
+    .container { max-width: 700px; margin: 0 auto; }
+    h1 { color: white; text-align: center; margin-bottom: 0.5rem; font-size: 2.5rem; text-shadow: 2px 2px 4px rgba(0,0,0,0.2); }
+    .subtitle { color: rgba(255,255,255,0.8); text-align: center; margin-bottom: 1.5rem; }
 
-    .container {
-      max-width: 700px;
-      margin: 0 auto;
-    }
-
-    h1 {
-      color: white;
-      text-align: center;
-      margin-bottom: 0.5rem;
-      font-size: 2.5rem;
-      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-    }
-
-    .subtitle {
-      color: rgba(255,255,255,0.8);
-      text-align: center;
-      margin-bottom: 2rem;
-    }
-
-    /* Auth Styles */
-    .auth-container {
-      background: white;
-      padding: 2rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      margin-bottom: 2rem;
-    }
-
-    .auth-tabs {
+    /* Navigation Tabs */
+    .nav-tabs {
       display: flex;
+      background: rgba(255,255,255,0.15);
+      border-radius: 12px;
+      padding: 0.25rem;
       margin-bottom: 1.5rem;
+      gap: 0.25rem;
     }
-
-    .auth-tab {
+    .nav-tab {
       flex: 1;
       padding: 0.75rem;
       border: none;
-      background: #f0f0f0;
+      background: transparent;
+      color: white;
       cursor: pointer;
-      font-size: 1rem;
+      font-size: 0.95rem;
+      font-weight: 500;
+      border-radius: 10px;
       transition: background 0.2s;
     }
+    .nav-tab:hover { background: rgba(255,255,255,0.1); }
+    .nav-tab.active { background: white; color: #667eea; }
 
-    .auth-tab:first-child {
-      border-radius: 8px 0 0 8px;
-    }
-
-    .auth-tab:last-child {
-      border-radius: 0 8px 8px 0;
-    }
-
-    .auth-tab.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
-
-    .auth-form {
-      display: none;
-    }
-
-    .auth-form.active {
-      display: block;
-    }
-
-    .form-group {
-      margin-bottom: 1rem;
-    }
-
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .form-group input,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 8px;
-      font-size: 1rem;
-      transition: border-color 0.2s;
-    }
-
-    .form-group input:focus,
-    .form-group textarea:focus {
-      outline: none;
-      border-color: #667eea;
-    }
-
-    .btn {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      border: none;
-      padding: 0.75rem 1.5rem;
-      border-radius: 8px;
-      font-size: 1rem;
-      font-weight: 600;
-      cursor: pointer;
-      transition: transform 0.2s, box-shadow 0.2s;
-      width: 100%;
-    }
-
-    .btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
-
-    .btn:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .btn-google {
-      background: white;
-      color: #333;
-      border: 2px solid #e0e0e0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.5rem;
-      margin-top: 1rem;
-    }
-
-    .btn-google:hover {
-      background: #f5f5f5;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-
-    .btn-secondary {
-      background: #e0e0e0;
-      color: #333;
-    }
-
-    .btn-small {
-      padding: 0.5rem 1rem;
-      font-size: 0.875rem;
-      width: auto;
-    }
-
-    .divider {
-      text-align: center;
-      margin: 1rem 0;
-      color: #999;
-      position: relative;
-    }
-
-    .divider::before,
-    .divider::after {
-      content: '';
-      position: absolute;
-      top: 50%;
-      width: 40%;
-      height: 1px;
-      background: #e0e0e0;
-    }
-
+    /* Auth Styles */
+    .auth-container { background: white; padding: 2rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 2rem; }
+    .auth-tabs { display: flex; margin-bottom: 1.5rem; }
+    .auth-tab { flex: 1; padding: 0.75rem; border: none; background: #f0f0f0; cursor: pointer; font-size: 1rem; transition: background 0.2s; }
+    .auth-tab:first-child { border-radius: 8px 0 0 8px; }
+    .auth-tab:last-child { border-radius: 0 8px 8px 0; }
+    .auth-tab.active { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+    .auth-form { display: none; }
+    .auth-form.active { display: block; }
+    .form-group { margin-bottom: 1rem; }
+    .form-group label { display: block; margin-bottom: 0.5rem; font-weight: 600; color: #333; }
+    .form-group input, .form-group textarea, .form-group select { width: 100%; padding: 0.75rem; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 1rem; transition: border-color 0.2s; }
+    .form-group input:focus, .form-group textarea:focus { outline: none; border-color: #667eea; }
+    .btn { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.75rem 1.5rem; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: transform 0.2s, box-shadow 0.2s; width: 100%; }
+    .btn:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4); }
+    .btn:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+    .btn-google { background: white; color: #333; border: 2px solid #e0e0e0; display: flex; align-items: center; justify-content: center; gap: 0.5rem; margin-top: 1rem; }
+    .btn-google:hover { background: #f5f5f5; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+    .btn-small { padding: 0.5rem 1rem; font-size: 0.875rem; width: auto; }
+    .btn-secondary { background: #e0e0e0; color: #333; }
+    .divider { text-align: center; margin: 1rem 0; color: #999; position: relative; }
+    .divider::before, .divider::after { content: ''; position: absolute; top: 50%; width: 40%; height: 1px; background: #e0e0e0; }
     .divider::before { left: 0; }
     .divider::after { right: 0; }
 
     /* User Header */
-    .user-header {
-      background: rgba(255,255,255,0.15);
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      color: white;
-    }
-
-    .user-info {
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: white;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: bold;
-      color: #667eea;
-    }
-
-    .user-avatar img {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      object-fit: cover;
-    }
-
-    .btn-logout {
-      background: rgba(255,255,255,0.2);
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
-      color: white;
-      cursor: pointer;
-      font-size: 0.875rem;
-    }
-
-    .btn-logout:hover {
-      background: rgba(255,255,255,0.3);
-    }
+    .user-header { background: rgba(255,255,255,0.15); padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+    .user-info { display: flex; align-items: center; gap: 0.75rem; }
+    .user-avatar { width: 40px; height: 40px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #667eea; overflow: hidden; }
+    .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .btn-logout { background: rgba(255,255,255,0.2); padding: 0.5rem 1rem; border: none; border-radius: 6px; color: white; cursor: pointer; font-size: 0.875rem; }
+    .btn-logout:hover { background: rgba(255,255,255,0.3); }
 
     /* Stats */
-    .stats {
-      background: rgba(255,255,255,0.15);
-      padding: 1rem 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-around;
-      color: white;
-      text-align: center;
-    }
-
-    .stat-item {
-      flex: 1;
-    }
-
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
-      opacity: 0.8;
-    }
+    .stats { background: rgba(255,255,255,0.15); padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; display: flex; justify-content: space-around; color: white; text-align: center; }
+    .stat-item { flex: 1; }
+    .stat-value { font-size: 2rem; font-weight: 700; }
+    .stat-label { font-size: 0.85rem; opacity: 0.8; }
 
     /* Add Form */
-    .add-form {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
-      margin-bottom: 2rem;
-    }
+    .add-form { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 10px 40px rgba(0,0,0,0.2); margin-bottom: 2rem; }
+    .add-form h2 { margin-bottom: 1rem; color: #333; }
+    .form-group textarea { resize: vertical; min-height: 60px; }
+    .form-actions { display: flex; gap: 0.5rem; }
+    .form-actions .btn { flex: 1; }
+    .btn-cancel { background: #e0e0e0; color: #333; }
 
-    .add-form h2 {
-      margin-bottom: 1rem;
-      color: #333;
-    }
-
-    .form-group textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
-    .form-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .form-actions .btn {
-      flex: 1;
-    }
-
-    .btn-cancel {
-      background: #e0e0e0;
-      color: #333;
-    }
+    /* Milestones */
+    .milestones-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
+    .milestones-section h4 { font-size: 0.9rem; color: #666; margin-bottom: 0.75rem; }
+    .milestone-inputs { display: flex; flex-direction: column; gap: 0.5rem; }
+    .milestone-row { display: flex; gap: 0.5rem; align-items: center; }
+    .milestone-row input { flex: 1; padding: 0.5rem; font-size: 0.9rem; }
+    .milestone-row input[type="number"] { width: 70px; flex: none; }
+    .milestone-row input[type="date"] { width: 140px; flex: none; }
+    .btn-remove-milestone { background: #ff6b6b; color: white; border: none; width: 28px; height: 28px; border-radius: 4px; cursor: pointer; font-size: 1rem; }
+    .btn-add-milestone { background: #f0f0f0; color: #667eea; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-top: 0.5rem; }
+    .btn-add-milestone:hover { background: #e0e0e0; }
 
     /* Resolution Cards */
-    .resolutions-list {
-      display: flex;
-      flex-direction: column;
-      gap: 1rem;
-    }
+    .resolutions-list { display: flex; flex-direction: column; gap: 1rem; }
+    .resolution-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); transition: transform 0.2s; }
+    .resolution-card:hover { transform: translateY(-2px); }
+    .resolution-card.completed { opacity: 0.8; background: #f0fff0; }
+    .resolution-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 0.5rem; }
+    .resolution-title { font-size: 1.25rem; font-weight: 600; color: #333; }
+    .resolution-card.completed .resolution-title { text-decoration: line-through; color: #28a745; }
+    .resolution-author { font-size: 0.85rem; color: #666; margin-bottom: 0.5rem; }
+    .resolution-actions { display: flex; gap: 0.5rem; }
+    .btn-icon { background: none; border: none; cursor: pointer; padding: 0.25rem; font-size: 1.25rem; opacity: 0.6; transition: opacity 0.2s; }
+    .btn-icon:hover { opacity: 1; }
+    .resolution-description { color: #666; margin-bottom: 1rem; font-size: 0.95rem; }
+    .progress-container { margin-top: 1rem; }
+    .progress-header { display: flex; justify-content: space-between; margin-bottom: 0.5rem; font-size: 0.9rem; color: #666; }
+    .progress-bar { height: 12px; background: #e0e0e0; border-radius: 6px; overflow: hidden; position: relative; }
+    .progress-fill { height: 100%; background: linear-gradient(90deg, #667eea 0%, #764ba2 100%); border-radius: 6px; transition: width 0.3s ease; }
+    .progress-slider { width: 100%; margin-top: 0.5rem; cursor: pointer; }
 
-    .resolution-card {
-      background: white;
-      padding: 1.5rem;
-      border-radius: 12px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-      transition: transform 0.2s;
-    }
+    /* Milestone markers on progress bar */
+    .milestone-markers { position: absolute; top: 0; left: 0; right: 0; bottom: 0; }
+    .milestone-marker { position: absolute; top: -4px; width: 4px; height: 20px; background: #333; border-radius: 2px; transform: translateX(-50%); }
+    .milestone-marker.completed { background: #28a745; }
 
-    .resolution-card:hover {
-      transform: translateY(-2px);
-    }
-
-    .resolution-card.completed {
-      opacity: 0.8;
-      background: #f0fff0;
-    }
-
-    .resolution-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: flex-start;
-      margin-bottom: 0.5rem;
-    }
-
-    .resolution-title {
-      font-size: 1.25rem;
-      font-weight: 600;
-      color: #333;
-    }
-
-    .resolution-card.completed .resolution-title {
-      text-decoration: line-through;
-      color: #28a745;
-    }
-
-    .resolution-author {
-      font-size: 0.85rem;
-      color: #666;
-      margin-bottom: 0.5rem;
-    }
-
-    .resolution-actions {
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .btn-icon {
-      background: none;
-      border: none;
-      cursor: pointer;
-      padding: 0.25rem;
-      font-size: 1.25rem;
-      opacity: 0.6;
-      transition: opacity 0.2s;
-    }
-
-    .btn-icon:hover {
-      opacity: 1;
-    }
-
-    .resolution-description {
-      color: #666;
-      margin-bottom: 1rem;
-      font-size: 0.95rem;
-    }
-
-    .progress-container {
-      margin-top: 1rem;
-    }
-
-    .progress-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.5rem;
-      font-size: 0.9rem;
-      color: #666;
-    }
-
-    .progress-bar {
-      height: 12px;
-      background: #e0e0e0;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-
-    .progress-fill {
-      height: 100%;
-      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
-      border-radius: 6px;
-      transition: width 0.3s ease;
-    }
-
-    .progress-slider {
-      width: 100%;
-      margin-top: 0.5rem;
-      cursor: pointer;
-    }
+    /* Milestones display */
+    .milestones-display { margin-top: 0.75rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
+    .milestone-badge { background: #f0f0f0; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; color: #666; display: flex; align-items: center; gap: 0.25rem; }
+    .milestone-badge.completed { background: #d4edda; color: #155724; }
+    .milestone-badge.overdue { background: #f8d7da; color: #721c24; }
 
     /* Share Button */
-    .share-section {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e0e0e0;
-      display: flex;
-      gap: 0.5rem;
-    }
-
-    .btn-share {
-      background: #f0f0f0;
-      color: #333;
-      padding: 0.5rem 1rem;
-      border: none;
-      border-radius: 6px;
-      font-size: 0.85rem;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 0.25rem;
-    }
-
-    .btn-share:hover {
-      background: #e0e0e0;
-    }
+    .share-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; display: flex; gap: 0.5rem; }
+    .btn-share { background: #f0f0f0; color: #333; padding: 0.5rem 1rem; border: none; border-radius: 6px; font-size: 0.85rem; cursor: pointer; display: flex; align-items: center; gap: 0.25rem; }
+    .btn-share:hover { background: #e0e0e0; }
 
     /* Comments */
-    .comments-section {
-      margin-top: 1rem;
-      padding-top: 1rem;
-      border-top: 1px solid #e0e0e0;
-    }
+    .comments-section { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid #e0e0e0; }
+    .comments-toggle { background: none; border: none; color: #667eea; cursor: pointer; font-size: 0.9rem; padding: 0; }
+    .comments-list { margin-top: 1rem; }
+    .comment { background: #f5f5f5; padding: 0.75rem; border-radius: 8px; margin-bottom: 0.5rem; }
+    .comment-header { display: flex; justify-content: space-between; margin-bottom: 0.25rem; }
+    .comment-author { font-weight: 600; font-size: 0.85rem; color: #333; }
+    .comment-date { font-size: 0.75rem; color: #999; }
+    .comment-text { font-size: 0.9rem; color: #555; }
+    .comment-form { display: flex; gap: 0.5rem; margin-top: 0.75rem; }
+    .comment-form input { flex: 1; padding: 0.5rem 0.75rem; border: 2px solid #e0e0e0; border-radius: 6px; font-size: 0.9rem; }
+    .comment-form input:focus { outline: none; border-color: #667eea; }
 
-    .comments-toggle {
-      background: none;
-      border: none;
-      color: #667eea;
-      cursor: pointer;
-      font-size: 0.9rem;
-      padding: 0;
-    }
+    /* Activity Feed */
+    .activity-list { display: flex; flex-direction: column; gap: 0.75rem; }
+    .activity-card { background: white; padding: 1rem 1.25rem; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.08); display: flex; align-items: flex-start; gap: 1rem; }
+    .activity-avatar { width: 40px; height: 40px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; overflow: hidden; }
+    .activity-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .activity-content { flex: 1; }
+    .activity-text { font-size: 0.95rem; color: #333; margin-bottom: 0.25rem; }
+    .activity-text strong { color: #667eea; }
+    .activity-meta { font-size: 0.8rem; color: #999; }
+    .activity-icon { font-size: 1.5rem; }
 
-    .comments-list {
-      margin-top: 1rem;
-    }
-
-    .comment {
-      background: #f5f5f5;
-      padding: 0.75rem;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-    }
-
-    .comment-header {
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0.25rem;
-    }
-
-    .comment-author {
-      font-weight: 600;
-      font-size: 0.85rem;
-      color: #333;
-    }
-
-    .comment-date {
-      font-size: 0.75rem;
-      color: #999;
-    }
-
-    .comment-text {
-      font-size: 0.9rem;
-      color: #555;
-    }
-
-    .comment-form {
-      display: flex;
-      gap: 0.5rem;
-      margin-top: 0.75rem;
-    }
-
-    .comment-form input {
-      flex: 1;
-      padding: 0.5rem 0.75rem;
-      border: 2px solid #e0e0e0;
-      border-radius: 6px;
-      font-size: 0.9rem;
-    }
-
-    .comment-form input:focus {
-      outline: none;
-      border-color: #667eea;
-    }
+    /* Community */
+    .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
+    .user-card { background: white; padding: 1.5rem; border-radius: 12px; text-align: center; box-shadow: 0 4px 20px rgba(0,0,0,0.1); cursor: pointer; transition: transform 0.2s; }
+    .user-card:hover { transform: translateY(-4px); }
+    .user-card-avatar { width: 60px; height: 60px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-size: 1.5rem; font-weight: bold; margin: 0 auto 0.75rem; overflow: hidden; }
+    .user-card-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-card-name { font-weight: 600; color: #333; margin-bottom: 0.25rem; }
+    .user-card-stats { font-size: 0.85rem; color: #666; }
 
     /* Empty State */
-    .empty-state {
-      text-align: center;
-      color: white;
-      padding: 3rem;
-      background: rgba(255,255,255,0.1);
-      border-radius: 12px;
-    }
-
-    .empty-state h2 {
-      margin-bottom: 0.5rem;
-    }
+    .empty-state { text-align: center; color: white; padding: 3rem; background: rgba(255,255,255,0.1); border-radius: 12px; }
+    .empty-state h2 { margin-bottom: 0.5rem; }
 
     /* Profile View */
-    .profile-header {
-      background: rgba(255,255,255,0.15);
-      padding: 1.5rem;
-      border-radius: 12px;
-      margin-bottom: 1.5rem;
-      color: white;
-      text-align: center;
-    }
+    .profile-header { background: rgba(255,255,255,0.15); padding: 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; color: white; text-align: center; }
+    .profile-header h2 { margin-bottom: 0.5rem; }
+    .profile-header p { opacity: 0.8; }
+    .back-link { color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; opacity: 0.8; }
+    .back-link:hover { opacity: 1; }
 
-    .profile-header h2 {
-      margin-bottom: 0.5rem;
-    }
+    /* Messages */
+    .message { padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
+    .message.error { background: #fee; color: #c00; border: 1px solid #fcc; }
+    .message.success { background: #efe; color: #060; border: 1px solid #cfc; }
 
-    .profile-header p {
-      opacity: 0.8;
-    }
-
-    .back-link {
-      color: white;
-      text-decoration: none;
-      display: inline-flex;
-      align-items: center;
-      gap: 0.5rem;
-      margin-bottom: 1rem;
-      opacity: 0.8;
-    }
-
-    .back-link:hover {
-      opacity: 1;
-    }
-
-    /* Error/Success Messages */
-    .message {
-      padding: 0.75rem;
-      border-radius: 8px;
-      margin-bottom: 1rem;
-      font-size: 0.9rem;
-    }
-
-    .message.error {
-      background: #fee;
-      color: #c00;
-      border: 1px solid #fcc;
-    }
-
-    .message.success {
-      background: #efe;
-      color: #060;
-      border: 1px solid #cfc;
-    }
-
-    .hidden {
-      display: none !important;
-    }
-
-    /* Loading */
-    .loading {
-      text-align: center;
-      color: white;
-      padding: 2rem;
-    }
-
-    .spinner {
-      width: 40px;
-      height: 40px;
-      border: 4px solid rgba(255,255,255,0.3);
-      border-top-color: white;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-      margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-      to { transform: rotate(360deg); }
-    }
+    .hidden { display: none !important; }
+    .loading { text-align: center; color: white; padding: 2rem; }
+    .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
+    @keyframes spin { to { transform: rotate(360deg); } }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>2026 Resolutions</h1>
-    <p class="subtitle" id="subtitle">Track your goals, share your progress</p>
+    <p class="subtitle">Track your goals, share your progress</p>
 
-    <!-- Loading State -->
-    <div id="loading" class="loading">
-      <div class="spinner"></div>
-      <p>Loading...</p>
-    </div>
+    <div id="loading" class="loading"><div class="spinner"></div><p>Loading...</p></div>
 
-    <!-- Auth Container (shown when logged out) -->
+    <!-- Auth Container -->
     <div id="auth-container" class="auth-container hidden">
       <div class="auth-tabs">
         <button class="auth-tab active" data-tab="login">Log In</button>
         <button class="auth-tab" data-tab="signup">Sign Up</button>
       </div>
-
       <div id="auth-message"></div>
-
-      <!-- Login Form -->
       <form id="login-form" class="auth-form active">
-        <div class="form-group">
-          <label for="login-email">Email</label>
-          <input type="email" id="login-email" required>
-        </div>
-        <div class="form-group">
-          <label for="login-password">Password</label>
-          <input type="password" id="login-password" required>
-        </div>
+        <div class="form-group"><label for="login-email">Email</label><input type="email" id="login-email" required></div>
+        <div class="form-group"><label for="login-password">Password</label><input type="password" id="login-password" required></div>
         <button type="submit" class="btn">Log In</button>
         <div class="divider">or</div>
         <button type="button" id="google-login" class="btn btn-google">
@@ -617,21 +213,10 @@
           Continue with Google
         </button>
       </form>
-
-      <!-- Signup Form -->
       <form id="signup-form" class="auth-form">
-        <div class="form-group">
-          <label for="signup-name">Display Name</label>
-          <input type="text" id="signup-name" required>
-        </div>
-        <div class="form-group">
-          <label for="signup-email">Email</label>
-          <input type="email" id="signup-email" required>
-        </div>
-        <div class="form-group">
-          <label for="signup-password">Password</label>
-          <input type="password" id="signup-password" required minlength="6">
-        </div>
+        <div class="form-group"><label for="signup-name">Display Name</label><input type="text" id="signup-name" required></div>
+        <div class="form-group"><label for="signup-email">Email</label><input type="email" id="signup-email" required></div>
+        <div class="form-group"><label for="signup-password">Password</label><input type="password" id="signup-password" required minlength="6"></div>
         <button type="submit" class="btn">Create Account</button>
         <div class="divider">or</div>
         <button type="button" id="google-signup" class="btn btn-google">
@@ -641,141 +226,108 @@
       </form>
     </div>
 
-    <!-- Main App (shown when logged in) -->
+    <!-- Main App -->
     <div id="app-container" class="hidden">
-      <!-- User Header -->
       <div class="user-header">
         <div class="user-info">
           <div class="user-avatar" id="user-avatar">?</div>
-          <div>
-            <div id="user-name">User</div>
-            <small id="user-email" style="opacity: 0.8;"></small>
-          </div>
+          <div><div id="user-name">User</div><small id="user-email" style="opacity: 0.8;"></small></div>
         </div>
         <div>
-          <button class="btn-share" id="share-profile" style="margin-right: 0.5rem;">Share Profile</button>
+          <button class="btn-share" id="share-profile" style="margin-right: 0.5rem;">Share</button>
           <button class="btn-logout" id="logout-btn">Log Out</button>
         </div>
       </div>
 
-      <!-- Stats -->
-      <div class="stats">
-        <div class="stat-item">
-          <div class="stat-value" id="total-count">0</div>
-          <div class="stat-label">Total</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="completed-count">0</div>
-          <div class="stat-label">Completed</div>
-        </div>
-        <div class="stat-item">
-          <div class="stat-value" id="avg-progress">0%</div>
-          <div class="stat-label">Avg Progress</div>
-        </div>
+      <!-- Navigation Tabs -->
+      <div class="nav-tabs">
+        <button class="nav-tab active" data-view="resolutions">My Resolutions</button>
+        <button class="nav-tab" data-view="feed">Activity Feed</button>
+        <button class="nav-tab" data-view="community">Community</button>
       </div>
 
-      <!-- Add Form -->
-      <div class="add-form" id="add-form-container">
-        <h2 id="form-title">Add Resolution</h2>
-        <form id="resolution-form">
-          <input type="hidden" id="edit-id">
-          <div class="form-group">
-            <label for="title">Resolution</label>
-            <input type="text" id="title" placeholder="e.g., Exercise 3 times a week" required>
-          </div>
-          <div class="form-group">
-            <label for="description">Description (optional)</label>
-            <textarea id="description" placeholder="Add more details..."></textarea>
-          </div>
-          <div class="form-actions">
-            <button type="submit" class="btn" id="submit-btn">Add Resolution</button>
-            <button type="button" class="btn btn-cancel hidden" id="cancel-btn">Cancel</button>
-          </div>
-        </form>
+      <!-- My Resolutions View -->
+      <div id="resolutions-view">
+        <div class="stats">
+          <div class="stat-item"><div class="stat-value" id="total-count">0</div><div class="stat-label">Total</div></div>
+          <div class="stat-item"><div class="stat-value" id="completed-count">0</div><div class="stat-label">Completed</div></div>
+          <div class="stat-item"><div class="stat-value" id="avg-progress">0%</div><div class="stat-label">Avg Progress</div></div>
+        </div>
+        <div class="add-form">
+          <h2 id="form-title">Add Resolution</h2>
+          <form id="resolution-form">
+            <input type="hidden" id="edit-id">
+            <div class="form-group"><label for="title">Resolution</label><input type="text" id="title" placeholder="e.g., Exercise 3 times a week" required></div>
+            <div class="form-group"><label for="description">Description (optional)</label><textarea id="description" placeholder="Add more details..."></textarea></div>
+            <div class="milestones-section">
+              <h4>Milestones (optional)</h4>
+              <div class="milestone-inputs" id="milestone-inputs"></div>
+              <button type="button" class="btn-add-milestone" id="add-milestone-btn">+ Add Milestone</button>
+            </div>
+            <div class="form-actions" style="margin-top: 1rem;">
+              <button type="submit" class="btn" id="submit-btn">Add Resolution</button>
+              <button type="button" class="btn btn-cancel hidden" id="cancel-btn">Cancel</button>
+            </div>
+          </form>
+        </div>
+        <div class="resolutions-list" id="resolutions-list"></div>
       </div>
 
-      <!-- Resolutions List -->
-      <div class="resolutions-list" id="resolutions-list"></div>
+      <!-- Activity Feed View -->
+      <div id="feed-view" class="hidden">
+        <div class="activity-list" id="activity-list"></div>
+      </div>
+
+      <!-- Community View -->
+      <div id="community-view" class="hidden">
+        <div class="community-grid" id="community-grid"></div>
+      </div>
     </div>
 
-    <!-- Profile View (for viewing other users) -->
+    <!-- Profile View -->
     <div id="profile-container" class="hidden">
       <a href="?" class="back-link">← Back to my resolutions</a>
-      <div class="profile-header">
-        <h2 id="profile-name">User's Resolutions</h2>
-        <p id="profile-subtitle">Public resolutions</p>
-      </div>
+      <div class="profile-header"><h2 id="profile-name">User's Resolutions</h2><p id="profile-subtitle">Public resolutions</p></div>
       <div class="resolutions-list" id="profile-resolutions-list"></div>
     </div>
   </div>
 
-  <!-- Firebase SDK -->
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
-    import {
-      getAuth,
-      onAuthStateChanged,
-      signInWithEmailAndPassword,
-      createUserWithEmailAndPassword,
-      signInWithPopup,
-      GoogleAuthProvider,
-      signOut,
-      updateProfile
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
-    import {
-      getFirestore,
-      collection,
-      doc,
-      addDoc,
-      updateDoc,
-      deleteDoc,
-      query,
-      where,
-      orderBy,
-      onSnapshot,
-      serverTimestamp,
-      getDoc,
-      setDoc
-    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import { getFirestore, collection, doc, addDoc, updateDoc, deleteDoc, query, where, orderBy, onSnapshot, serverTimestamp, getDoc, setDoc, getDocs, limit, Timestamp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
 
-    // Firebase config
     const firebaseConfig = {
       apiKey: "AIzaSyD0LDZFWUBafLoMpA3L_3CEXFO16Hyf2Uw",
       authDomain: "resolutions-app-f1553.firebaseapp.com",
       projectId: "resolutions-app-f1553",
       storageBucket: "resolutions-app-f1553.firebasestorage.app",
       messagingSenderId: "172437404478",
-      appId: "1:172437404478:web:867a7e3036a0f7cdb64a6f",
-      measurementId: "G-BXLL5Y274D"
+      appId: "1:172437404478:web:867a7e3036a0f7cdb64a6f"
     };
 
-    // Initialize Firebase
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
     const db = getFirestore(app);
     const googleProvider = new GoogleAuthProvider();
 
-    // State
     let currentUser = null;
     let resolutions = [];
     let unsubscribeResolutions = null;
+    let unsubscribeActivities = null;
+    let editingMilestones = [];
 
-    // DOM Elements
     const loadingEl = document.getElementById('loading');
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
     const profileContainer = document.getElementById('profile-container');
-
-    // Check for profile view mode
     const urlParams = new URLSearchParams(window.location.search);
     const viewUserId = urlParams.get('user');
 
-    // Auth state listener
+    // Auth state
     onAuthStateChanged(auth, async (user) => {
       loadingEl.classList.add('hidden');
-
       if (viewUserId) {
-        // Profile view mode
         authContainer.classList.add('hidden');
         appContainer.classList.add('hidden');
         profileContainer.classList.remove('hidden');
@@ -793,13 +345,11 @@
         authContainer.classList.remove('hidden');
         appContainer.classList.add('hidden');
         profileContainer.classList.add('hidden');
-        if (unsubscribeResolutions) {
-          unsubscribeResolutions();
-        }
+        if (unsubscribeResolutions) unsubscribeResolutions();
+        if (unsubscribeActivities) unsubscribeActivities();
       }
     });
 
-    // Ensure user document exists
     async function ensureUserDocument() {
       const userRef = doc(db, 'users', currentUser.uid);
       const userSnap = await getDoc(userRef);
@@ -813,12 +363,10 @@
       }
     }
 
-    // Update user UI
     function updateUserUI() {
       const name = currentUser.displayName || currentUser.email.split('@')[0];
       document.getElementById('user-name').textContent = name;
       document.getElementById('user-email').textContent = currentUser.email;
-
       const avatarEl = document.getElementById('user-avatar');
       if (currentUser.photoURL) {
         avatarEl.innerHTML = `<img src="${currentUser.photoURL}" alt="${name}">`;
@@ -827,165 +375,207 @@
       }
     }
 
-    // Subscribe to user's resolutions
-    function subscribeToResolutions() {
-      const q = query(
-        collection(db, 'resolutions'),
-        where('userId', '==', currentUser.uid),
-        orderBy('createdAt', 'desc')
-      );
+    // Navigation
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const view = tab.dataset.view;
+        document.getElementById('resolutions-view').classList.toggle('hidden', view !== 'resolutions');
+        document.getElementById('feed-view').classList.toggle('hidden', view !== 'feed');
+        document.getElementById('community-view').classList.toggle('hidden', view !== 'community');
+        if (view === 'feed') loadActivityFeed();
+        if (view === 'community') loadCommunity();
+      });
+    });
 
+    function subscribeToResolutions() {
+      const q = query(collection(db, 'resolutions'), where('userId', '==', currentUser.uid), orderBy('createdAt', 'desc'));
       unsubscribeResolutions = onSnapshot(q, (snapshot) => {
-        resolutions = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
+        resolutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderResolutions();
         updateStats();
       });
     }
 
-    // Load profile view
-    async function loadProfileView(userId) {
-      const userRef = doc(db, 'users', userId);
-      const userSnap = await getDoc(userRef);
+    // Activity Feed
+    async function loadActivityFeed() {
+      const container = document.getElementById('activity-list');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
-      if (userSnap.exists()) {
-        const userData = userSnap.data();
-        document.getElementById('profile-name').textContent = `${userData.displayName}'s Resolutions`;
-      }
+      const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'), limit(50));
+      if (unsubscribeActivities) unsubscribeActivities();
 
-      const q = query(
-        collection(db, 'resolutions'),
-        where('userId', '==', userId),
-        where('isPublic', '==', true),
-        orderBy('createdAt', 'desc')
-      );
-
-      onSnapshot(q, (snapshot) => {
-        const profileResolutions = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-        renderProfileResolutions(profileResolutions);
+      unsubscribeActivities = onSnapshot(q, (snapshot) => {
+        const activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        if (activities.length === 0) {
+          container.innerHTML = '<div class="empty-state"><h2>No activity yet</h2><p>Activity will appear here as users add and update resolutions.</p></div>';
+          return;
+        }
+        container.innerHTML = activities.map(a => renderActivityCard(a)).join('');
       });
     }
 
-    // Render profile resolutions
-    function renderProfileResolutions(resolutions) {
-      const container = document.getElementById('profile-resolutions-list');
-
-      if (resolutions.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <h2>No public resolutions</h2>
-            <p>This user hasn't shared any resolutions yet.</p>
-          </div>
-        `;
-        return;
+    function renderActivityCard(activity) {
+      const icons = { new_resolution: '🎯', progress_update: '📈', comment: '💬', completion: '🎉' };
+      const icon = icons[activity.type] || '📌';
+      let text = '';
+      switch (activity.type) {
+        case 'new_resolution': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> added a new resolution: "${escapeHtml(activity.resolutionTitle)}"`; break;
+        case 'progress_update': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> updated progress on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%`; break;
+        case 'comment': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> commented on "${escapeHtml(activity.resolutionTitle)}"`; break;
+        case 'completion': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> completed "${escapeHtml(activity.resolutionTitle)}" 🎉`; break;
       }
-
-      container.innerHTML = resolutions.map(res => `
-        <div class="resolution-card ${res.progress === 100 ? 'completed' : ''}" data-id="${res.id}">
-          <div class="resolution-header">
-            <div class="resolution-title">${escapeHtml(res.title)}</div>
-          </div>
-          ${res.description ? `<div class="resolution-description">${escapeHtml(res.description)}</div>` : ''}
-          <div class="progress-container">
-            <div class="progress-header">
-              <span>Progress</span>
-              <span>${res.progress}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${res.progress}%"></div>
-            </div>
-          </div>
-          ${renderCommentsSection(res, true)}
-        </div>
-      `).join('');
-
-      attachCommentListeners(container);
-    }
-
-    // Render resolutions
-    function renderResolutions() {
-      const container = document.getElementById('resolutions-list');
-
-      if (resolutions.length === 0) {
-        container.innerHTML = `
-          <div class="empty-state">
-            <h2>No resolutions yet</h2>
-            <p>Add your first resolution above to get started!</p>
-          </div>
-        `;
-        return;
-      }
-
-      container.innerHTML = resolutions.map(res => `
-        <div class="resolution-card ${res.progress === 100 ? 'completed' : ''}" data-id="${res.id}">
-          <div class="resolution-header">
-            <div class="resolution-title">${escapeHtml(res.title)}</div>
-            <div class="resolution-actions">
-              <button class="btn-icon" onclick="window.editResolution('${res.id}')" title="Edit">&#9998;</button>
-              <button class="btn-icon" onclick="window.deleteResolution('${res.id}')" title="Delete">&#128465;</button>
-            </div>
-          </div>
-          ${res.description ? `<div class="resolution-description">${escapeHtml(res.description)}</div>` : ''}
-          <div class="progress-container">
-            <div class="progress-header">
-              <span>Progress</span>
-              <span>${res.progress}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${res.progress}%"></div>
-            </div>
-            <input
-              type="range"
-              class="progress-slider"
-              min="0"
-              max="100"
-              value="${res.progress}"
-              onchange="window.updateProgress('${res.id}', this.value)"
-            >
-          </div>
-          <div class="share-section">
-            <button class="btn-share" onclick="window.shareResolution('${res.id}')">
-              &#128279; Copy Link
-            </button>
-          </div>
-          ${renderCommentsSection(res, false)}
-        </div>
-      `).join('');
-
-      attachCommentListeners(container);
-    }
-
-    // Render comments section
-    function renderCommentsSection(resolution, isProfileView) {
+      const avatar = activity.userPhotoURL
+        ? `<img src="${activity.userPhotoURL}" alt="">`
+        : escapeHtml((activity.userDisplayName || '?')[0].toUpperCase());
       return `
-        <div class="comments-section">
-          <button class="comments-toggle" data-id="${resolution.id}">
-            Show comments
-          </button>
-          <div class="comments-list hidden" id="comments-${resolution.id}"></div>
-          ${currentUser ? `
-            <form class="comment-form hidden" id="comment-form-${resolution.id}" data-id="${resolution.id}">
-              <input type="text" placeholder="Add a comment..." required>
-              <button type="submit" class="btn btn-small">Post</button>
-            </form>
-          ` : ''}
+        <div class="activity-card">
+          <div class="activity-avatar">${avatar}</div>
+          <div class="activity-content">
+            <div class="activity-text">${text}</div>
+            <div class="activity-meta">${formatTimeAgo(activity.createdAt)}</div>
+          </div>
+          <div class="activity-icon">${icon}</div>
         </div>
       `;
     }
 
-    // Attach comment listeners
+    // Community
+    async function loadCommunity() {
+      const container = document.getElementById('community-grid');
+      container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+
+      const usersSnap = await getDocs(collection(db, 'users'));
+      const users = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
+      if (users.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h2>No users yet</h2></div>';
+        return;
+      }
+
+      // Get resolution counts
+      const userCounts = {};
+      const resSnap = await getDocs(collection(db, 'resolutions'));
+      resSnap.docs.forEach(doc => {
+        const data = doc.data();
+        userCounts[data.userId] = (userCounts[data.userId] || 0) + 1;
+      });
+
+      container.innerHTML = users.map(u => {
+        const avatar = u.photoURL ? `<img src="${u.photoURL}" alt="">` : escapeHtml((u.displayName || '?')[0].toUpperCase());
+        const count = userCounts[u.id] || 0;
+        return `
+          <div class="user-card" onclick="window.location.href='?user=${u.id}'">
+            <div class="user-card-avatar">${avatar}</div>
+            <div class="user-card-name">${escapeHtml(u.displayName || 'Anonymous')}</div>
+            <div class="user-card-stats">${count} resolution${count !== 1 ? 's' : ''}</div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    // Log activity
+    async function logActivity(type, resolution, data = {}) {
+      await addDoc(collection(db, 'activities'), {
+        type,
+        userId: currentUser.uid,
+        userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
+        userPhotoURL: currentUser.photoURL || null,
+        resolutionId: resolution.id || '',
+        resolutionTitle: resolution.title || '',
+        data,
+        createdAt: serverTimestamp()
+      });
+    }
+
+    // Profile view
+    async function loadProfileView(userId) {
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+      if (userSnap.exists()) {
+        document.getElementById('profile-name').textContent = `${userSnap.data().displayName}'s Resolutions`;
+      }
+      const q = query(collection(db, 'resolutions'), where('userId', '==', userId), where('isPublic', '==', true), orderBy('createdAt', 'desc'));
+      onSnapshot(q, (snapshot) => {
+        const profileResolutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        renderProfileResolutions(profileResolutions);
+      });
+    }
+
+    function renderProfileResolutions(resolutions) {
+      const container = document.getElementById('profile-resolutions-list');
+      if (resolutions.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h2>No public resolutions</h2></div>';
+        return;
+      }
+      container.innerHTML = resolutions.map(res => renderResolutionCard(res, false)).join('');
+      attachCommentListeners(container);
+    }
+
+    function renderResolutions() {
+      const container = document.getElementById('resolutions-list');
+      if (resolutions.length === 0) {
+        container.innerHTML = '<div class="empty-state"><h2>No resolutions yet</h2><p>Add your first resolution above!</p></div>';
+        return;
+      }
+      container.innerHTML = resolutions.map(res => renderResolutionCard(res, true)).join('');
+      attachCommentListeners(container);
+    }
+
+    function renderResolutionCard(res, isOwner) {
+      const milestones = res.milestones || [];
+      const milestonesHtml = milestones.length > 0 ? `
+        <div class="milestones-display">
+          ${milestones.map(m => {
+            const isComplete = res.progress >= m.targetPercent;
+            const isOverdue = m.targetDate && !isComplete && new Date(m.targetDate.seconds * 1000) < new Date();
+            const cls = isComplete ? 'completed' : (isOverdue ? 'overdue' : '');
+            const dateStr = m.targetDate ? new Date(m.targetDate.seconds * 1000).toLocaleDateString() : '';
+            return `<span class="milestone-badge ${cls}">${isComplete ? '✓' : '○'} ${m.targetPercent}% - ${escapeHtml(m.title)} ${dateStr ? `(${dateStr})` : ''}</span>`;
+          }).join('')}
+        </div>
+      ` : '';
+
+      return `
+        <div class="resolution-card ${res.progress === 100 ? 'completed' : ''}" data-id="${res.id}">
+          <div class="resolution-header">
+            <div class="resolution-title">${escapeHtml(res.title)}</div>
+            ${isOwner ? `
+              <div class="resolution-actions">
+                <button class="btn-icon" onclick="window.editResolution('${res.id}')" title="Edit">✎</button>
+                <button class="btn-icon" onclick="window.deleteResolution('${res.id}')" title="Delete">🗑</button>
+              </div>
+            ` : ''}
+          </div>
+          ${res.description ? `<div class="resolution-description">${escapeHtml(res.description)}</div>` : ''}
+          <div class="progress-container">
+            <div class="progress-header"><span>Progress</span><span>${res.progress}%</span></div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${res.progress}%"></div>
+              <div class="milestone-markers">
+                ${milestones.map(m => `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%"></div>`).join('')}
+              </div>
+            </div>
+            ${isOwner ? `<input type="range" class="progress-slider" min="0" max="100" value="${res.progress}" onchange="window.updateProgress('${res.id}', this.value, ${res.progress})">` : ''}
+          </div>
+          ${milestonesHtml}
+          ${isOwner ? `<div class="share-section"><button class="btn-share" onclick="window.shareResolution('${res.id}')">🔗 Copy Link</button></div>` : ''}
+          <div class="comments-section">
+            <button class="comments-toggle" data-id="${res.id}">Show comments</button>
+            <div class="comments-list hidden" id="comments-${res.id}"></div>
+            ${currentUser ? `<form class="comment-form hidden" id="comment-form-${res.id}" data-id="${res.id}"><input type="text" placeholder="Add a comment..." required><button type="submit" class="btn btn-small">Post</button></form>` : ''}
+          </div>
+        </div>
+      `;
+    }
+
     function attachCommentListeners(container) {
       container.querySelectorAll('.comments-toggle').forEach(btn => {
-        btn.addEventListener('click', async () => {
+        btn.addEventListener('click', () => {
           const resId = btn.dataset.id;
           const listEl = document.getElementById(`comments-${resId}`);
           const formEl = document.getElementById(`comment-form-${resId}`);
-
           if (listEl.classList.contains('hidden')) {
             btn.textContent = 'Hide comments';
             listEl.classList.remove('hidden');
@@ -998,14 +588,12 @@
           }
         });
       });
-
       container.querySelectorAll('.comment-form').forEach(form => {
         form.addEventListener('submit', async (e) => {
           e.preventDefault();
           const resId = form.dataset.id;
           const input = form.querySelector('input');
           const text = input.value.trim();
-
           if (text && currentUser) {
             await addDoc(collection(db, 'resolutions', resId, 'comments'), {
               userId: currentUser.uid,
@@ -1013,71 +601,84 @@
               text,
               createdAt: serverTimestamp()
             });
+            const res = resolutions.find(r => r.id === resId);
+            if (res) await logActivity('comment', res, { commentText: text });
             input.value = '';
-            loadComments(resId, document.getElementById(`comments-${resId}`));
           }
         });
       });
     }
 
-    // Load comments for a resolution
-    async function loadComments(resolutionId, container) {
-      const q = query(
-        collection(db, 'resolutions', resolutionId, 'comments'),
-        orderBy('createdAt', 'desc')
-      );
-
+    function loadComments(resolutionId, container) {
+      const q = query(collection(db, 'resolutions', resolutionId, 'comments'), orderBy('createdAt', 'desc'));
       onSnapshot(q, (snapshot) => {
-        const comments = snapshot.docs.map(doc => ({
-          id: doc.id,
-          ...doc.data()
-        }));
-
+        const comments = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (comments.length === 0) {
           container.innerHTML = '<p style="color: #999; font-size: 0.9rem;">No comments yet.</p>';
           return;
         }
-
-        container.innerHTML = comments.map(comment => `
+        container.innerHTML = comments.map(c => `
           <div class="comment">
-            <div class="comment-header">
-              <span class="comment-author">${escapeHtml(comment.userDisplayName)}</span>
-              <span class="comment-date">${formatDate(comment.createdAt)}</span>
-            </div>
-            <div class="comment-text">${escapeHtml(comment.text)}</div>
+            <div class="comment-header"><span class="comment-author">${escapeHtml(c.userDisplayName)}</span><span class="comment-date">${formatDate(c.createdAt)}</span></div>
+            <div class="comment-text">${escapeHtml(c.text)}</div>
           </div>
         `).join('');
       });
     }
 
-    // Format date
-    function formatDate(timestamp) {
-      if (!timestamp) return '';
-      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
-      return date.toLocaleDateString();
+    // Milestones UI
+    document.getElementById('add-milestone-btn').addEventListener('click', () => {
+      const id = Date.now().toString();
+      editingMilestones.push({ id, title: '', targetPercent: 25, targetDate: null });
+      renderMilestoneInputs();
+    });
+
+    function renderMilestoneInputs() {
+      const container = document.getElementById('milestone-inputs');
+      container.innerHTML = editingMilestones.map((m, i) => `
+        <div class="milestone-row" data-id="${m.id}">
+          <input type="text" placeholder="Milestone title" value="${escapeHtml(m.title)}" onchange="window.updateMilestone('${m.id}', 'title', this.value)">
+          <input type="number" min="1" max="100" value="${m.targetPercent}" onchange="window.updateMilestone('${m.id}', 'targetPercent', this.value)">%
+          <input type="date" value="${m.targetDate || ''}" onchange="window.updateMilestone('${m.id}', 'targetDate', this.value)">
+          <button type="button" class="btn-remove-milestone" onclick="window.removeMilestone('${m.id}')">×</button>
+        </div>
+      `).join('');
     }
 
-    // Update stats
+    window.updateMilestone = (id, field, value) => {
+      const m = editingMilestones.find(x => x.id === id);
+      if (m) m[field] = field === 'targetPercent' ? parseInt(value) : value;
+    };
+
+    window.removeMilestone = (id) => {
+      editingMilestones = editingMilestones.filter(m => m.id !== id);
+      renderMilestoneInputs();
+    };
+
+    // Stats
     function updateStats() {
       const total = resolutions.length;
       const completed = resolutions.filter(r => r.progress === 100).length;
-      const avgProgress = total > 0
-        ? Math.round(resolutions.reduce((sum, r) => sum + r.progress, 0) / total)
-        : 0;
-
+      const avgProgress = total > 0 ? Math.round(resolutions.reduce((sum, r) => sum + r.progress, 0) / total) : 0;
       document.getElementById('total-count').textContent = total;
       document.getElementById('completed-count').textContent = completed;
       document.getElementById('avg-progress').textContent = avgProgress + '%';
     }
 
-    // Escape HTML
-    function escapeHtml(text) {
-      const div = document.createElement('div');
-      div.textContent = text;
-      return div.innerHTML;
+    // Helpers
+    function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+    function formatDate(ts) { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString(); }
+    function formatTimeAgo(ts) {
+      if (!ts) return '';
+      const d = ts.toDate ? ts.toDate() : new Date(ts);
+      const diff = (Date.now() - d.getTime()) / 1000;
+      if (diff < 60) return 'just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      return `${Math.floor(diff / 86400)}d ago`;
     }
 
-    // Auth tab switching
+    // Auth tabs
     document.querySelectorAll('.auth-tab').forEach(tab => {
       tab.addEventListener('click', () => {
         document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
@@ -1087,102 +688,61 @@
       });
     });
 
-    // Show auth message
-    function showAuthMessage(message, isError = true) {
-      const msgEl = document.getElementById('auth-message');
-      msgEl.innerHTML = `<div class="message ${isError ? 'error' : 'success'}">${message}</div>`;
-      setTimeout(() => msgEl.innerHTML = '', 5000);
+    function showAuthMessage(msg, isError = true) {
+      const el = document.getElementById('auth-message');
+      el.innerHTML = `<div class="message ${isError ? 'error' : 'success'}">${msg}</div>`;
+      setTimeout(() => el.innerHTML = '', 5000);
     }
 
-    // Login form
     document.getElementById('login-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const email = document.getElementById('login-email').value;
-      const password = document.getElementById('login-password').value;
-
-      try {
-        await signInWithEmailAndPassword(auth, email, password);
-      } catch (error) {
-        showAuthMessage(error.message);
-      }
+      try { await signInWithEmailAndPassword(auth, document.getElementById('login-email').value, document.getElementById('login-password').value); }
+      catch (err) { showAuthMessage(err.message); }
     });
 
-    // Signup form
     document.getElementById('signup-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const name = document.getElementById('signup-name').value;
-      const email = document.getElementById('signup-email').value;
-      const password = document.getElementById('signup-password').value;
-
       try {
-        const result = await createUserWithEmailAndPassword(auth, email, password);
-        await updateProfile(result.user, { displayName: name });
-      } catch (error) {
-        showAuthMessage(error.message);
-      }
+        const result = await createUserWithEmailAndPassword(auth, document.getElementById('signup-email').value, document.getElementById('signup-password').value);
+        await updateProfile(result.user, { displayName: document.getElementById('signup-name').value });
+      } catch (err) { showAuthMessage(err.message); }
     });
 
-    // Google sign in
-    document.getElementById('google-login').addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, googleProvider);
-      } catch (error) {
-        showAuthMessage(error.message);
-      }
-    });
-
-    document.getElementById('google-signup').addEventListener('click', async () => {
-      try {
-        await signInWithPopup(auth, googleProvider);
-      } catch (error) {
-        showAuthMessage(error.message);
-      }
-    });
-
-    // Logout
-    document.getElementById('logout-btn').addEventListener('click', () => {
-      signOut(auth);
-    });
-
-    // Share profile
-    document.getElementById('share-profile').addEventListener('click', () => {
-      const url = `${window.location.origin}${window.location.pathname}?user=${currentUser.uid}`;
-      navigator.clipboard.writeText(url);
-      alert('Profile link copied to clipboard!');
-    });
+    document.getElementById('google-login').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); } catch (err) { showAuthMessage(err.message); } });
+    document.getElementById('google-signup').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); } catch (err) { showAuthMessage(err.message); } });
+    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+    document.getElementById('share-profile').addEventListener('click', () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Profile link copied!'); });
 
     // Resolution form
     document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-
       const title = document.getElementById('title').value.trim();
       const description = document.getElementById('description').value.trim();
       const editId = document.getElementById('edit-id').value;
 
+      const milestones = editingMilestones.filter(m => m.title.trim()).map(m => ({
+        id: m.id,
+        title: m.title.trim(),
+        targetPercent: m.targetPercent,
+        targetDate: m.targetDate ? Timestamp.fromDate(new Date(m.targetDate)) : null,
+        completedAt: null
+      }));
+
       if (editId) {
-        await updateDoc(doc(db, 'resolutions', editId), {
-          title,
-          description
-        });
+        await updateDoc(doc(db, 'resolutions', editId), { title, description, milestones });
         resetForm();
       } else {
-        await addDoc(collection(db, 'resolutions'), {
+        const docRef = await addDoc(collection(db, 'resolutions'), {
           userId: currentUser.uid,
           userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
-          title,
-          description,
-          progress: 0,
-          isPublic: true,
-          createdAt: serverTimestamp(),
-          completedAt: null
+          title, description, progress: 0, isPublic: true, milestones,
+          createdAt: serverTimestamp(), completedAt: null
         });
+        await logActivity('new_resolution', { id: docRef.id, title });
+        resetForm();
       }
-
-      document.getElementById('title').value = '';
-      document.getElementById('description').value = '';
     });
 
-    // Cancel edit
     document.getElementById('cancel-btn').addEventListener('click', resetForm);
 
     function resetForm() {
@@ -1192,44 +752,47 @@
       document.getElementById('form-title').textContent = 'Add Resolution';
       document.getElementById('submit-btn').textContent = 'Add Resolution';
       document.getElementById('cancel-btn').classList.add('hidden');
+      editingMilestones = [];
+      renderMilestoneInputs();
     }
 
-    // Edit resolution
     window.editResolution = (id) => {
-      const resolution = resolutions.find(r => r.id === id);
-      if (!resolution) return;
-
-      document.getElementById('title').value = resolution.title;
-      document.getElementById('description').value = resolution.description || '';
+      const res = resolutions.find(r => r.id === id);
+      if (!res) return;
+      document.getElementById('title').value = res.title;
+      document.getElementById('description').value = res.description || '';
       document.getElementById('edit-id').value = id;
       document.getElementById('form-title').textContent = 'Edit Resolution';
-      document.getElementById('submit-btn').textContent = 'Update Resolution';
+      document.getElementById('submit-btn').textContent = 'Update';
       document.getElementById('cancel-btn').classList.remove('hidden');
+      editingMilestones = (res.milestones || []).map(m => ({
+        id: m.id,
+        title: m.title,
+        targetPercent: m.targetPercent,
+        targetDate: m.targetDate ? new Date(m.targetDate.seconds * 1000).toISOString().split('T')[0] : ''
+      }));
+      renderMilestoneInputs();
       document.getElementById('title').focus();
     };
 
-    // Delete resolution
-    window.deleteResolution = async (id) => {
-      if (confirm('Are you sure you want to delete this resolution?')) {
-        await deleteDoc(doc(db, 'resolutions', id));
+    window.deleteResolution = async (id) => { if (confirm('Delete this resolution?')) await deleteDoc(doc(db, 'resolutions', id)); };
+
+    window.updateProgress = async (id, value, oldValue) => {
+      const progress = parseInt(value);
+      const wasComplete = oldValue === 100;
+      const isComplete = progress === 100;
+      await updateDoc(doc(db, 'resolutions', id), { progress, completedAt: isComplete ? serverTimestamp() : null });
+      const res = resolutions.find(r => r.id === id);
+      if (res) {
+        if (isComplete && !wasComplete) {
+          await logActivity('completion', res);
+        } else if (Math.abs(progress - oldValue) >= 10) {
+          await logActivity('progress_update', res, { oldProgress: oldValue, newProgress: progress });
+        }
       }
     };
 
-    // Update progress
-    window.updateProgress = async (id, value) => {
-      const progress = parseInt(value);
-      await updateDoc(doc(db, 'resolutions', id), {
-        progress,
-        completedAt: progress === 100 ? serverTimestamp() : null
-      });
-    };
-
-    // Share resolution
-    window.shareResolution = (id) => {
-      const url = `${window.location.origin}${window.location.pathname}?user=${currentUser.uid}`;
-      navigator.clipboard.writeText(url);
-      alert('Link copied to clipboard!');
-    };
+    window.shareResolution = () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Link copied!'); };
   </script>
 </body>
 </html>
