@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>2026 Resolutions Tracker</title>
+  <title>2026 Resolutions</title>
   <style>
     * {
       margin: 0;
@@ -19,24 +19,67 @@
     }
 
     .container {
-      max-width: 600px;
+      max-width: 700px;
       margin: 0 auto;
     }
 
     h1 {
       color: white;
       text-align: center;
-      margin-bottom: 2rem;
+      margin-bottom: 0.5rem;
       font-size: 2.5rem;
       text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
     }
 
-    .add-form {
+    .subtitle {
+      color: rgba(255,255,255,0.8);
+      text-align: center;
+      margin-bottom: 2rem;
+    }
+
+    /* Auth Styles */
+    .auth-container {
       background: white;
-      padding: 1.5rem;
+      padding: 2rem;
       border-radius: 12px;
       box-shadow: 0 10px 40px rgba(0,0,0,0.2);
       margin-bottom: 2rem;
+    }
+
+    .auth-tabs {
+      display: flex;
+      margin-bottom: 1.5rem;
+    }
+
+    .auth-tab {
+      flex: 1;
+      padding: 0.75rem;
+      border: none;
+      background: #f0f0f0;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background 0.2s;
+    }
+
+    .auth-tab:first-child {
+      border-radius: 8px 0 0 8px;
+    }
+
+    .auth-tab:last-child {
+      border-radius: 0 8px 8px 0;
+    }
+
+    .auth-tab.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .auth-form {
+      display: none;
+    }
+
+    .auth-form.active {
+      display: block;
     }
 
     .form-group {
@@ -66,11 +109,6 @@
       border-color: #667eea;
     }
 
-    .form-group textarea {
-      resize: vertical;
-      min-height: 80px;
-    }
-
     .btn {
       background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
       color: white;
@@ -81,6 +119,7 @@
       font-weight: 600;
       cursor: pointer;
       transition: transform 0.2s, box-shadow 0.2s;
+      width: 100%;
     }
 
     .btn:hover {
@@ -88,16 +127,170 @@
       box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
     }
 
+    .btn:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-google {
+      background: white;
+      color: #333;
+      border: 2px solid #e0e0e0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-top: 1rem;
+    }
+
+    .btn-google:hover {
+      background: #f5f5f5;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .btn-secondary {
+      background: #e0e0e0;
+      color: #333;
+    }
+
+    .btn-small {
+      padding: 0.5rem 1rem;
+      font-size: 0.875rem;
+      width: auto;
+    }
+
+    .divider {
+      text-align: center;
+      margin: 1rem 0;
+      color: #999;
+      position: relative;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      position: absolute;
+      top: 50%;
+      width: 40%;
+      height: 1px;
+      background: #e0e0e0;
+    }
+
+    .divider::before { left: 0; }
+    .divider::after { right: 0; }
+
+    /* User Header */
+    .user-header {
+      background: rgba(255,255,255,0.15);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+    }
+
+    .user-info {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .user-avatar {
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      background: white;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      color: #667eea;
+    }
+
+    .user-avatar img {
+      width: 100%;
+      height: 100%;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .btn-logout {
+      background: rgba(255,255,255,0.2);
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      cursor: pointer;
+      font-size: 0.875rem;
+    }
+
+    .btn-logout:hover {
+      background: rgba(255,255,255,0.3);
+    }
+
+    /* Stats */
+    .stats {
+      background: rgba(255,255,255,0.15);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-around;
+      color: white;
+      text-align: center;
+    }
+
+    .stat-item {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+
+    /* Add Form */
+    .add-form {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 2rem;
+    }
+
+    .add-form h2 {
+      margin-bottom: 1rem;
+      color: #333;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .form-actions .btn {
+      flex: 1;
+    }
+
     .btn-cancel {
       background: #e0e0e0;
       color: #333;
-      margin-left: 0.5rem;
     }
 
-    .btn-cancel:hover {
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-    }
-
+    /* Resolution Cards */
     .resolutions-list {
       display: flex;
       flex-direction: column;
@@ -117,7 +310,7 @@
     }
 
     .resolution-card.completed {
-      opacity: 0.7;
+      opacity: 0.8;
       background: #f0fff0;
     }
 
@@ -137,6 +330,12 @@
     .resolution-card.completed .resolution-title {
       text-decoration: line-through;
       color: #28a745;
+    }
+
+    .resolution-author {
+      font-size: 0.85rem;
+      color: #666;
+      margin-bottom: 0.5rem;
     }
 
     .resolution-actions {
@@ -196,6 +395,101 @@
       cursor: pointer;
     }
 
+    /* Share Button */
+    .share-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-share {
+      background: #f0f0f0;
+      color: #333;
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .btn-share:hover {
+      background: #e0e0e0;
+    }
+
+    /* Comments */
+    .comments-section {
+      margin-top: 1rem;
+      padding-top: 1rem;
+      border-top: 1px solid #e0e0e0;
+    }
+
+    .comments-toggle {
+      background: none;
+      border: none;
+      color: #667eea;
+      cursor: pointer;
+      font-size: 0.9rem;
+      padding: 0;
+    }
+
+    .comments-list {
+      margin-top: 1rem;
+    }
+
+    .comment {
+      background: #f5f5f5;
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 0.5rem;
+    }
+
+    .comment-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.25rem;
+    }
+
+    .comment-author {
+      font-weight: 600;
+      font-size: 0.85rem;
+      color: #333;
+    }
+
+    .comment-date {
+      font-size: 0.75rem;
+      color: #999;
+    }
+
+    .comment-text {
+      font-size: 0.9rem;
+      color: #555;
+    }
+
+    .comment-form {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.75rem;
+    }
+
+    .comment-form input {
+      flex: 1;
+      padding: 0.5rem 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .comment-form input:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    /* Empty State */
     .empty-state {
       text-align: center;
       color: white;
@@ -208,92 +502,562 @@
       margin-bottom: 0.5rem;
     }
 
-    .stats {
+    /* Profile View */
+    .profile-header {
       background: rgba(255,255,255,0.15);
-      padding: 1rem 1.5rem;
+      padding: 1.5rem;
       border-radius: 12px;
       margin-bottom: 1.5rem;
-      display: flex;
-      justify-content: space-around;
       color: white;
       text-align: center;
     }
 
-    .stat-item {
-      flex: 1;
+    .profile-header h2 {
+      margin-bottom: 0.5rem;
     }
 
-    .stat-value {
-      font-size: 2rem;
-      font-weight: 700;
-    }
-
-    .stat-label {
-      font-size: 0.85rem;
+    .profile-header p {
       opacity: 0.8;
+    }
+
+    .back-link {
+      color: white;
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      margin-bottom: 1rem;
+      opacity: 0.8;
+    }
+
+    .back-link:hover {
+      opacity: 1;
+    }
+
+    /* Error/Success Messages */
+    .message {
+      padding: 0.75rem;
+      border-radius: 8px;
+      margin-bottom: 1rem;
+      font-size: 0.9rem;
+    }
+
+    .message.error {
+      background: #fee;
+      color: #c00;
+      border: 1px solid #fcc;
+    }
+
+    .message.success {
+      background: #efe;
+      color: #060;
+      border: 1px solid #cfc;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Loading */
+    .loading {
+      text-align: center;
+      color: white;
+      padding: 2rem;
+    }
+
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 4px solid rgba(255,255,255,0.3);
+      border-top-color: white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
 <body>
   <div class="container">
     <h1>2026 Resolutions</h1>
+    <p class="subtitle" id="subtitle">Track your goals, share your progress</p>
 
-    <div class="stats" id="stats">
-      <div class="stat-item">
-        <div class="stat-value" id="total-count">0</div>
-        <div class="stat-label">Total</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="completed-count">0</div>
-        <div class="stat-label">Completed</div>
-      </div>
-      <div class="stat-item">
-        <div class="stat-value" id="avg-progress">0%</div>
-        <div class="stat-label">Avg Progress</div>
-      </div>
+    <!-- Loading State -->
+    <div id="loading" class="loading">
+      <div class="spinner"></div>
+      <p>Loading...</p>
     </div>
 
-    <div class="add-form">
-      <h2 id="form-title" style="margin-bottom: 1rem; color: #333;">Add Resolution</h2>
-      <form id="resolution-form">
-        <input type="hidden" id="edit-id">
+    <!-- Auth Container (shown when logged out) -->
+    <div id="auth-container" class="auth-container hidden">
+      <div class="auth-tabs">
+        <button class="auth-tab active" data-tab="login">Log In</button>
+        <button class="auth-tab" data-tab="signup">Sign Up</button>
+      </div>
+
+      <div id="auth-message"></div>
+
+      <!-- Login Form -->
+      <form id="login-form" class="auth-form active">
         <div class="form-group">
-          <label for="title">Resolution</label>
-          <input type="text" id="title" placeholder="e.g., Exercise 3 times a week" required>
+          <label for="login-email">Email</label>
+          <input type="email" id="login-email" required>
         </div>
         <div class="form-group">
-          <label for="description">Description (optional)</label>
-          <textarea id="description" placeholder="Add more details about your goal..."></textarea>
+          <label for="login-password">Password</label>
+          <input type="password" id="login-password" required>
         </div>
-        <button type="submit" class="btn" id="submit-btn">Add Resolution</button>
-        <button type="button" class="btn btn-cancel" id="cancel-btn" style="display: none;">Cancel</button>
+        <button type="submit" class="btn">Log In</button>
+        <div class="divider">or</div>
+        <button type="button" id="google-login" class="btn btn-google">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Continue with Google
+        </button>
+      </form>
+
+      <!-- Signup Form -->
+      <form id="signup-form" class="auth-form">
+        <div class="form-group">
+          <label for="signup-name">Display Name</label>
+          <input type="text" id="signup-name" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-email">Email</label>
+          <input type="email" id="signup-email" required>
+        </div>
+        <div class="form-group">
+          <label for="signup-password">Password</label>
+          <input type="password" id="signup-password" required minlength="6">
+        </div>
+        <button type="submit" class="btn">Create Account</button>
+        <div class="divider">or</div>
+        <button type="button" id="google-signup" class="btn btn-google">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z"/></svg>
+          Continue with Google
+        </button>
       </form>
     </div>
 
-    <div class="resolutions-list" id="resolutions-list"></div>
+    <!-- Main App (shown when logged in) -->
+    <div id="app-container" class="hidden">
+      <!-- User Header -->
+      <div class="user-header">
+        <div class="user-info">
+          <div class="user-avatar" id="user-avatar">?</div>
+          <div>
+            <div id="user-name">User</div>
+            <small id="user-email" style="opacity: 0.8;"></small>
+          </div>
+        </div>
+        <div>
+          <button class="btn-share" id="share-profile" style="margin-right: 0.5rem;">Share Profile</button>
+          <button class="btn-logout" id="logout-btn">Log Out</button>
+        </div>
+      </div>
+
+      <!-- Stats -->
+      <div class="stats">
+        <div class="stat-item">
+          <div class="stat-value" id="total-count">0</div>
+          <div class="stat-label">Total</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="completed-count">0</div>
+          <div class="stat-label">Completed</div>
+        </div>
+        <div class="stat-item">
+          <div class="stat-value" id="avg-progress">0%</div>
+          <div class="stat-label">Avg Progress</div>
+        </div>
+      </div>
+
+      <!-- Add Form -->
+      <div class="add-form" id="add-form-container">
+        <h2 id="form-title">Add Resolution</h2>
+        <form id="resolution-form">
+          <input type="hidden" id="edit-id">
+          <div class="form-group">
+            <label for="title">Resolution</label>
+            <input type="text" id="title" placeholder="e.g., Exercise 3 times a week" required>
+          </div>
+          <div class="form-group">
+            <label for="description">Description (optional)</label>
+            <textarea id="description" placeholder="Add more details..."></textarea>
+          </div>
+          <div class="form-actions">
+            <button type="submit" class="btn" id="submit-btn">Add Resolution</button>
+            <button type="button" class="btn btn-cancel hidden" id="cancel-btn">Cancel</button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Resolutions List -->
+      <div class="resolutions-list" id="resolutions-list"></div>
+    </div>
+
+    <!-- Profile View (for viewing other users) -->
+    <div id="profile-container" class="hidden">
+      <a href="?" class="back-link">← Back to my resolutions</a>
+      <div class="profile-header">
+        <h2 id="profile-name">User's Resolutions</h2>
+        <p id="profile-subtitle">Public resolutions</p>
+      </div>
+      <div class="resolutions-list" id="profile-resolutions-list"></div>
+    </div>
   </div>
 
-  <script>
+  <!-- Firebase SDK -->
+  <script type="module">
+    import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
+    import {
+      getAuth,
+      onAuthStateChanged,
+      signInWithEmailAndPassword,
+      createUserWithEmailAndPassword,
+      signInWithPopup,
+      GoogleAuthProvider,
+      signOut,
+      updateProfile
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
+    import {
+      getFirestore,
+      collection,
+      doc,
+      addDoc,
+      updateDoc,
+      deleteDoc,
+      query,
+      where,
+      orderBy,
+      onSnapshot,
+      serverTimestamp,
+      getDoc,
+      setDoc
+    } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js';
+
+    // Firebase config
+    const firebaseConfig = {
+      apiKey: "AIzaSyD0LDZFWUBafLoMpA3L_3CEXFO16Hyf2Uw",
+      authDomain: "resolutions-app-f1553.firebaseapp.com",
+      projectId: "resolutions-app-f1553",
+      storageBucket: "resolutions-app-f1553.firebasestorage.app",
+      messagingSenderId: "172437404478",
+      appId: "1:172437404478:web:867a7e3036a0f7cdb64a6f",
+      measurementId: "G-BXLL5Y274D"
+    };
+
+    // Initialize Firebase
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+    const googleProvider = new GoogleAuthProvider();
+
     // State
-    let resolutions = JSON.parse(localStorage.getItem('resolutions')) || [];
+    let currentUser = null;
+    let resolutions = [];
+    let unsubscribeResolutions = null;
 
     // DOM Elements
-    const form = document.getElementById('resolution-form');
-    const titleInput = document.getElementById('title');
-    const descriptionInput = document.getElementById('description');
-    const editIdInput = document.getElementById('edit-id');
-    const formTitle = document.getElementById('form-title');
-    const submitBtn = document.getElementById('submit-btn');
-    const cancelBtn = document.getElementById('cancel-btn');
-    const listContainer = document.getElementById('resolutions-list');
+    const loadingEl = document.getElementById('loading');
+    const authContainer = document.getElementById('auth-container');
+    const appContainer = document.getElementById('app-container');
+    const profileContainer = document.getElementById('profile-container');
 
-    // Save to localStorage
-    function save() {
-      localStorage.setItem('resolutions', JSON.stringify(resolutions));
-      updateStats();
+    // Check for profile view mode
+    const urlParams = new URLSearchParams(window.location.search);
+    const viewUserId = urlParams.get('user');
+
+    // Auth state listener
+    onAuthStateChanged(auth, async (user) => {
+      loadingEl.classList.add('hidden');
+
+      if (viewUserId) {
+        // Profile view mode
+        authContainer.classList.add('hidden');
+        appContainer.classList.add('hidden');
+        profileContainer.classList.remove('hidden');
+        loadProfileView(viewUserId);
+      } else if (user) {
+        currentUser = user;
+        authContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
+        profileContainer.classList.add('hidden');
+        updateUserUI();
+        subscribeToResolutions();
+        await ensureUserDocument();
+      } else {
+        currentUser = null;
+        authContainer.classList.remove('hidden');
+        appContainer.classList.add('hidden');
+        profileContainer.classList.add('hidden');
+        if (unsubscribeResolutions) {
+          unsubscribeResolutions();
+        }
+      }
+    });
+
+    // Ensure user document exists
+    async function ensureUserDocument() {
+      const userRef = doc(db, 'users', currentUser.uid);
+      const userSnap = await getDoc(userRef);
+      if (!userSnap.exists()) {
+        await setDoc(userRef, {
+          displayName: currentUser.displayName || currentUser.email.split('@')[0],
+          email: currentUser.email,
+          photoURL: currentUser.photoURL,
+          createdAt: serverTimestamp()
+        });
+      }
     }
 
-    // Update stats display
+    // Update user UI
+    function updateUserUI() {
+      const name = currentUser.displayName || currentUser.email.split('@')[0];
+      document.getElementById('user-name').textContent = name;
+      document.getElementById('user-email').textContent = currentUser.email;
+
+      const avatarEl = document.getElementById('user-avatar');
+      if (currentUser.photoURL) {
+        avatarEl.innerHTML = `<img src="${currentUser.photoURL}" alt="${name}">`;
+      } else {
+        avatarEl.textContent = name.charAt(0).toUpperCase();
+      }
+    }
+
+    // Subscribe to user's resolutions
+    function subscribeToResolutions() {
+      const q = query(
+        collection(db, 'resolutions'),
+        where('userId', '==', currentUser.uid),
+        orderBy('createdAt', 'desc')
+      );
+
+      unsubscribeResolutions = onSnapshot(q, (snapshot) => {
+        resolutions = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        renderResolutions();
+        updateStats();
+      });
+    }
+
+    // Load profile view
+    async function loadProfileView(userId) {
+      const userRef = doc(db, 'users', userId);
+      const userSnap = await getDoc(userRef);
+
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        document.getElementById('profile-name').textContent = `${userData.displayName}'s Resolutions`;
+      }
+
+      const q = query(
+        collection(db, 'resolutions'),
+        where('userId', '==', userId),
+        where('isPublic', '==', true),
+        orderBy('createdAt', 'desc')
+      );
+
+      onSnapshot(q, (snapshot) => {
+        const profileResolutions = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+        renderProfileResolutions(profileResolutions);
+      });
+    }
+
+    // Render profile resolutions
+    function renderProfileResolutions(resolutions) {
+      const container = document.getElementById('profile-resolutions-list');
+
+      if (resolutions.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>No public resolutions</h2>
+            <p>This user hasn't shared any resolutions yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = resolutions.map(res => `
+        <div class="resolution-card ${res.progress === 100 ? 'completed' : ''}" data-id="${res.id}">
+          <div class="resolution-header">
+            <div class="resolution-title">${escapeHtml(res.title)}</div>
+          </div>
+          ${res.description ? `<div class="resolution-description">${escapeHtml(res.description)}</div>` : ''}
+          <div class="progress-container">
+            <div class="progress-header">
+              <span>Progress</span>
+              <span>${res.progress}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${res.progress}%"></div>
+            </div>
+          </div>
+          ${renderCommentsSection(res, true)}
+        </div>
+      `).join('');
+
+      attachCommentListeners(container);
+    }
+
+    // Render resolutions
+    function renderResolutions() {
+      const container = document.getElementById('resolutions-list');
+
+      if (resolutions.length === 0) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>No resolutions yet</h2>
+            <p>Add your first resolution above to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = resolutions.map(res => `
+        <div class="resolution-card ${res.progress === 100 ? 'completed' : ''}" data-id="${res.id}">
+          <div class="resolution-header">
+            <div class="resolution-title">${escapeHtml(res.title)}</div>
+            <div class="resolution-actions">
+              <button class="btn-icon" onclick="window.editResolution('${res.id}')" title="Edit">&#9998;</button>
+              <button class="btn-icon" onclick="window.deleteResolution('${res.id}')" title="Delete">&#128465;</button>
+            </div>
+          </div>
+          ${res.description ? `<div class="resolution-description">${escapeHtml(res.description)}</div>` : ''}
+          <div class="progress-container">
+            <div class="progress-header">
+              <span>Progress</span>
+              <span>${res.progress}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${res.progress}%"></div>
+            </div>
+            <input
+              type="range"
+              class="progress-slider"
+              min="0"
+              max="100"
+              value="${res.progress}"
+              onchange="window.updateProgress('${res.id}', this.value)"
+            >
+          </div>
+          <div class="share-section">
+            <button class="btn-share" onclick="window.shareResolution('${res.id}')">
+              &#128279; Copy Link
+            </button>
+          </div>
+          ${renderCommentsSection(res, false)}
+        </div>
+      `).join('');
+
+      attachCommentListeners(container);
+    }
+
+    // Render comments section
+    function renderCommentsSection(resolution, isProfileView) {
+      return `
+        <div class="comments-section">
+          <button class="comments-toggle" data-id="${resolution.id}">
+            Show comments
+          </button>
+          <div class="comments-list hidden" id="comments-${resolution.id}"></div>
+          ${currentUser ? `
+            <form class="comment-form hidden" id="comment-form-${resolution.id}" data-id="${resolution.id}">
+              <input type="text" placeholder="Add a comment..." required>
+              <button type="submit" class="btn btn-small">Post</button>
+            </form>
+          ` : ''}
+        </div>
+      `;
+    }
+
+    // Attach comment listeners
+    function attachCommentListeners(container) {
+      container.querySelectorAll('.comments-toggle').forEach(btn => {
+        btn.addEventListener('click', async () => {
+          const resId = btn.dataset.id;
+          const listEl = document.getElementById(`comments-${resId}`);
+          const formEl = document.getElementById(`comment-form-${resId}`);
+
+          if (listEl.classList.contains('hidden')) {
+            btn.textContent = 'Hide comments';
+            listEl.classList.remove('hidden');
+            if (formEl) formEl.classList.remove('hidden');
+            loadComments(resId, listEl);
+          } else {
+            btn.textContent = 'Show comments';
+            listEl.classList.add('hidden');
+            if (formEl) formEl.classList.add('hidden');
+          }
+        });
+      });
+
+      container.querySelectorAll('.comment-form').forEach(form => {
+        form.addEventListener('submit', async (e) => {
+          e.preventDefault();
+          const resId = form.dataset.id;
+          const input = form.querySelector('input');
+          const text = input.value.trim();
+
+          if (text && currentUser) {
+            await addDoc(collection(db, 'resolutions', resId, 'comments'), {
+              userId: currentUser.uid,
+              userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
+              text,
+              createdAt: serverTimestamp()
+            });
+            input.value = '';
+            loadComments(resId, document.getElementById(`comments-${resId}`));
+          }
+        });
+      });
+    }
+
+    // Load comments for a resolution
+    async function loadComments(resolutionId, container) {
+      const q = query(
+        collection(db, 'resolutions', resolutionId, 'comments'),
+        orderBy('createdAt', 'desc')
+      );
+
+      onSnapshot(q, (snapshot) => {
+        const comments = snapshot.docs.map(doc => ({
+          id: doc.id,
+          ...doc.data()
+        }));
+
+        if (comments.length === 0) {
+          container.innerHTML = '<p style="color: #999; font-size: 0.9rem;">No comments yet.</p>';
+          return;
+        }
+
+        container.innerHTML = comments.map(comment => `
+          <div class="comment">
+            <div class="comment-header">
+              <span class="comment-author">${escapeHtml(comment.userDisplayName)}</span>
+              <span class="comment-date">${formatDate(comment.createdAt)}</span>
+            </div>
+            <div class="comment-text">${escapeHtml(comment.text)}</div>
+          </div>
+        `).join('');
+      });
+    }
+
+    // Format date
+    function formatDate(timestamp) {
+      if (!timestamp) return '';
+      const date = timestamp.toDate ? timestamp.toDate() : new Date(timestamp);
+      return date.toLocaleDateString();
+    }
+
+    // Update stats
     function updateStats() {
       const total = resolutions.length;
       const completed = resolutions.filter(r => r.progress === 100).length;
@@ -306,147 +1070,166 @@
       document.getElementById('avg-progress').textContent = avgProgress + '%';
     }
 
-    // Generate unique ID
-    function generateId() {
-      return Date.now().toString(36) + Math.random().toString(36).substr(2);
-    }
-
-    // Render resolutions
-    function render() {
-      if (resolutions.length === 0) {
-        listContainer.innerHTML = `
-          <div class="empty-state">
-            <h2>No resolutions yet</h2>
-            <p>Add your first resolution above to get started!</p>
-          </div>
-        `;
-        return;
-      }
-
-      listContainer.innerHTML = resolutions.map(resolution => `
-        <div class="resolution-card ${resolution.progress === 100 ? 'completed' : ''}" data-id="${resolution.id}">
-          <div class="resolution-header">
-            <div class="resolution-title">${escapeHtml(resolution.title)}</div>
-            <div class="resolution-actions">
-              <button class="btn-icon" onclick="editResolution('${resolution.id}')" title="Edit">&#9998;</button>
-              <button class="btn-icon" onclick="deleteResolution('${resolution.id}')" title="Delete">&#128465;</button>
-            </div>
-          </div>
-          ${resolution.description ? `<div class="resolution-description">${escapeHtml(resolution.description)}</div>` : ''}
-          <div class="progress-container">
-            <div class="progress-header">
-              <span>Progress</span>
-              <span>${resolution.progress}%</span>
-            </div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${resolution.progress}%"></div>
-            </div>
-            <input
-              type="range"
-              class="progress-slider"
-              min="0"
-              max="100"
-              value="${resolution.progress}"
-              onchange="updateProgress('${resolution.id}', this.value)"
-            >
-          </div>
-        </div>
-      `).join('');
-    }
-
-    // Escape HTML to prevent XSS
+    // Escape HTML
     function escapeHtml(text) {
       const div = document.createElement('div');
       div.textContent = text;
       return div.innerHTML;
     }
 
-    // Add or update resolution
-    form.addEventListener('submit', (e) => {
+    // Auth tab switching
+    document.querySelectorAll('.auth-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.auth-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.auth-form').forEach(f => f.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(`${tab.dataset.tab}-form`).classList.add('active');
+      });
+    });
+
+    // Show auth message
+    function showAuthMessage(message, isError = true) {
+      const msgEl = document.getElementById('auth-message');
+      msgEl.innerHTML = `<div class="message ${isError ? 'error' : 'success'}">${message}</div>`;
+      setTimeout(() => msgEl.innerHTML = '', 5000);
+    }
+
+    // Login form
+    document.getElementById('login-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const email = document.getElementById('login-email').value;
+      const password = document.getElementById('login-password').value;
+
+      try {
+        await signInWithEmailAndPassword(auth, email, password);
+      } catch (error) {
+        showAuthMessage(error.message);
+      }
+    });
+
+    // Signup form
+    document.getElementById('signup-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('signup-name').value;
+      const email = document.getElementById('signup-email').value;
+      const password = document.getElementById('signup-password').value;
+
+      try {
+        const result = await createUserWithEmailAndPassword(auth, email, password);
+        await updateProfile(result.user, { displayName: name });
+      } catch (error) {
+        showAuthMessage(error.message);
+      }
+    });
+
+    // Google sign in
+    document.getElementById('google-login').addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+        showAuthMessage(error.message);
+      }
+    });
+
+    document.getElementById('google-signup').addEventListener('click', async () => {
+      try {
+        await signInWithPopup(auth, googleProvider);
+      } catch (error) {
+        showAuthMessage(error.message);
+      }
+    });
+
+    // Logout
+    document.getElementById('logout-btn').addEventListener('click', () => {
+      signOut(auth);
+    });
+
+    // Share profile
+    document.getElementById('share-profile').addEventListener('click', () => {
+      const url = `${window.location.origin}${window.location.pathname}?user=${currentUser.uid}`;
+      navigator.clipboard.writeText(url);
+      alert('Profile link copied to clipboard!');
+    });
+
+    // Resolution form
+    document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
 
-      const title = titleInput.value.trim();
-      const description = descriptionInput.value.trim();
-      const editId = editIdInput.value;
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+      const editId = document.getElementById('edit-id').value;
 
       if (editId) {
-        // Update existing
-        const index = resolutions.findIndex(r => r.id === editId);
-        if (index !== -1) {
-          resolutions[index].title = title;
-          resolutions[index].description = description;
-        }
+        await updateDoc(doc(db, 'resolutions', editId), {
+          title,
+          description
+        });
         resetForm();
       } else {
-        // Add new
-        resolutions.push({
-          id: generateId(),
+        await addDoc(collection(db, 'resolutions'), {
+          userId: currentUser.uid,
+          userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
           title,
           description,
           progress: 0,
-          createdAt: new Date().toISOString()
+          isPublic: true,
+          createdAt: serverTimestamp(),
+          completedAt: null
         });
       }
 
-      titleInput.value = '';
-      descriptionInput.value = '';
-      save();
-      render();
+      document.getElementById('title').value = '';
+      document.getElementById('description').value = '';
     });
 
+    // Cancel edit
+    document.getElementById('cancel-btn').addEventListener('click', resetForm);
+
+    function resetForm() {
+      document.getElementById('title').value = '';
+      document.getElementById('description').value = '';
+      document.getElementById('edit-id').value = '';
+      document.getElementById('form-title').textContent = 'Add Resolution';
+      document.getElementById('submit-btn').textContent = 'Add Resolution';
+      document.getElementById('cancel-btn').classList.add('hidden');
+    }
+
     // Edit resolution
-    function editResolution(id) {
+    window.editResolution = (id) => {
       const resolution = resolutions.find(r => r.id === id);
       if (!resolution) return;
 
-      titleInput.value = resolution.title;
-      descriptionInput.value = resolution.description || '';
-      editIdInput.value = id;
-      formTitle.textContent = 'Edit Resolution';
-      submitBtn.textContent = 'Update Resolution';
-      cancelBtn.style.display = 'inline-block';
-      titleInput.focus();
-    }
-
-    // Cancel edit
-    cancelBtn.addEventListener('click', resetForm);
-
-    function resetForm() {
-      titleInput.value = '';
-      descriptionInput.value = '';
-      editIdInput.value = '';
-      formTitle.textContent = 'Add Resolution';
-      submitBtn.textContent = 'Add Resolution';
-      cancelBtn.style.display = 'none';
-    }
+      document.getElementById('title').value = resolution.title;
+      document.getElementById('description').value = resolution.description || '';
+      document.getElementById('edit-id').value = id;
+      document.getElementById('form-title').textContent = 'Edit Resolution';
+      document.getElementById('submit-btn').textContent = 'Update Resolution';
+      document.getElementById('cancel-btn').classList.remove('hidden');
+      document.getElementById('title').focus();
+    };
 
     // Delete resolution
-    function deleteResolution(id) {
+    window.deleteResolution = async (id) => {
       if (confirm('Are you sure you want to delete this resolution?')) {
-        resolutions = resolutions.filter(r => r.id !== id);
-        save();
-        render();
+        await deleteDoc(doc(db, 'resolutions', id));
       }
-    }
+    };
 
     // Update progress
-    function updateProgress(id, value) {
-      const resolution = resolutions.find(r => r.id === id);
-      if (resolution) {
-        resolution.progress = parseInt(value);
-        if (resolution.progress === 100) {
-          resolution.completedAt = new Date().toISOString();
-        } else {
-          resolution.completedAt = null;
-        }
-        save();
-        render();
-      }
-    }
+    window.updateProgress = async (id, value) => {
+      const progress = parseInt(value);
+      await updateDoc(doc(db, 'resolutions', id), {
+        progress,
+        completedAt: progress === 100 ? serverTimestamp() : null
+      });
+    };
 
-    // Initial render
-    render();
-    updateStats();
+    // Share resolution
+    window.shareResolution = (id) => {
+      const url = `${window.location.origin}${window.location.pathname}?user=${currentUser.uid}`;
+      navigator.clipboard.writeText(url);
+      alert('Link copied to clipboard!');
+    };
   </script>
 </body>
 </html>
