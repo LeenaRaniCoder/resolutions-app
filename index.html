@@ -835,10 +835,25 @@
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title, description })
         });
-        if (!response.ok) throw new Error('Analysis failed');
-        return await response.json();
+        const data = await response.json();
+        if (!response.ok) {
+          console.error('AI analysis error:', data);
+          throw new Error(data.error || 'Analysis failed');
+        }
+        return data;
       } catch (error) {
         console.error('AI analysis error:', error);
+        // Show error in modal instead of silently failing
+        document.getElementById('ai-modal-body').innerHTML = `
+          <div style="text-align:center;padding:1rem;">
+            <p style="color:#e74c3c;margin-bottom:1rem;">Could not analyze goal: ${error.message}</p>
+            <p style="color:#666;">Your resolution will be saved as-is.</p>
+          </div>
+        `;
+        document.getElementById('ai-modal-footer').innerHTML = `
+          <button class="btn" onclick="closeAIModal()">Continue</button>
+        `;
+        document.getElementById('ai-modal-footer').classList.remove('hidden');
         return null;
       }
     }
