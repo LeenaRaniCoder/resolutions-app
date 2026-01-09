@@ -912,25 +912,36 @@
     // Resolution form
     document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      const title = document.getElementById('title').value.trim();
-      const description = document.getElementById('description').value.trim();
-      const editId = document.getElementById('edit-id').value;
+      console.log('Form submitted');
 
-      // For new resolutions without milestones, offer AI analysis
-      if (!editId && editingMilestones.length === 0) {
-        showAIModal();
-        const analysis = await analyzeGoal(title, description);
-        if (analysis) {
-          aiSuggestions = analysis;
-          renderAISuggestions(analysis);
-          return; // Wait for user to accept or skip
-        } else {
-          closeAIModal();
-          // Continue with save if AI fails
+      try {
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        const editId = document.getElementById('edit-id').value;
+
+        console.log('Title:', title, 'EditId:', editId, 'Milestones:', editingMilestones.length);
+
+        // For new resolutions without milestones, offer AI analysis
+        if (!editId && editingMilestones.length === 0) {
+          console.log('Showing AI modal');
+          showAIModal();
+          const analysis = await analyzeGoal(title, description);
+          console.log('Analysis result:', analysis);
+          if (analysis) {
+            aiSuggestions = analysis;
+            renderAISuggestions(analysis);
+            return; // Wait for user to accept or skip
+          } else {
+            // Error was shown in modal, wait for user to click Continue
+            return;
+          }
         }
-      }
 
-      await saveResolution(title, description, editId);
+        await saveResolution(title, description, editId);
+      } catch (error) {
+        console.error('Form submission error:', error);
+        alert('Error: ' + error.message);
+      }
     });
 
     async function saveResolution(title, description, editId) {
