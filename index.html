@@ -99,6 +99,96 @@
     .btn-add-milestone { background: #f0f0f0; color: #667eea; border: none; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; font-size: 0.85rem; margin-top: 0.5rem; }
     .btn-add-milestone:hover { background: #e0e0e0; }
 
+    /* AI Suggestions Modal */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      padding: 1rem;
+    }
+    .modal {
+      background: white;
+      border-radius: 12px;
+      max-width: 500px;
+      width: 100%;
+      max-height: 80vh;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    }
+    .modal-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid #e0e0e0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .modal-header h3 { color: #333; font-size: 1.1rem; }
+    .modal-close {
+      background: none;
+      border: none;
+      font-size: 1.5rem;
+      cursor: pointer;
+      color: #999;
+    }
+    .modal-body { padding: 1.5rem; }
+    .modal-footer {
+      padding: 1rem 1.5rem;
+      border-top: 1px solid #e0e0e0;
+      display: flex;
+      gap: 0.5rem;
+      justify-content: flex-end;
+    }
+    .ai-section { margin-bottom: 1.25rem; }
+    .ai-section h4 { font-size: 0.9rem; color: #667eea; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
+    .ai-section p { font-size: 0.95rem; color: #333; line-height: 1.5; }
+    .ai-improved-goal {
+      background: #f0f4ff;
+      border: 2px solid #667eea;
+      border-radius: 8px;
+      padding: 1rem;
+      font-size: 0.95rem;
+      color: #333;
+    }
+    .ai-milestone {
+      background: #f5f5f5;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .ai-milestone-info { flex: 1; }
+    .ai-milestone-title { font-weight: 600; color: #333; font-size: 0.9rem; }
+    .ai-milestone-meta { font-size: 0.8rem; color: #666; }
+    .ai-loading {
+      text-align: center;
+      padding: 2rem;
+      color: #666;
+    }
+    .ai-loading .spinner {
+      border-color: #e0e0e0;
+      border-top-color: #667eea;
+      margin-bottom: 1rem;
+    }
+    .smart-badge {
+      display: inline-block;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      margin-right: 0.25rem;
+    }
+    .smart-badge.pass { background: #d4edda; color: #155724; }
+    .smart-badge.fail { background: #f8d7da; color: #721c24; }
+
     /* Resolution Cards */
     .resolutions-list { display: flex; flex-direction: column; gap: 1rem; }
     .resolution-card { background: white; padding: 1.5rem; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.1); transition: transform 0.2s; }
@@ -290,6 +380,26 @@
       <div class="profile-header"><h2 id="profile-name">User's Resolutions</h2><p id="profile-subtitle">Public resolutions</p></div>
       <div class="resolutions-list" id="profile-resolutions-list"></div>
     </div>
+
+    <!-- AI Suggestions Modal -->
+    <div id="ai-modal" class="modal-overlay hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h3>🤖 AI Goal Coach</h3>
+          <button class="modal-close" onclick="closeAIModal()">×</button>
+        </div>
+        <div class="modal-body" id="ai-modal-body">
+          <div class="ai-loading">
+            <div class="spinner"></div>
+            <p>Analyzing your goal...</p>
+          </div>
+        </div>
+        <div class="modal-footer hidden" id="ai-modal-footer">
+          <button class="btn btn-secondary btn-small" onclick="closeAIModal()">Keep Original</button>
+          <button class="btn btn-small" onclick="acceptAISuggestions()">Use Suggestions</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module">
@@ -316,6 +426,10 @@
     let unsubscribeResolutions = null;
     let unsubscribeActivities = null;
     let editingMilestones = [];
+    let aiSuggestions = null;
+
+    // OpenAI API key (stored in Netlify env, accessed via serverless function)
+    const ANALYZE_GOAL_URL = '/.netlify/functions/analyze-goal';
 
     const loadingEl = document.getElementById('loading');
     const authContainer = document.getElementById('auth-container');
@@ -713,6 +827,94 @@
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
     document.getElementById('share-profile').addEventListener('click', () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Profile link copied!'); });
 
+    // AI Goal Analysis
+    async function analyzeGoal(title, description) {
+      try {
+        const response = await fetch(ANALYZE_GOAL_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, description })
+        });
+        if (!response.ok) throw new Error('Analysis failed');
+        return await response.json();
+      } catch (error) {
+        console.error('AI analysis error:', error);
+        return null;
+      }
+    }
+
+    function showAIModal() {
+      document.getElementById('ai-modal').classList.remove('hidden');
+      document.getElementById('ai-modal-footer').classList.add('hidden');
+      document.getElementById('ai-modal-body').innerHTML = `
+        <div class="ai-loading">
+          <div class="spinner"></div>
+          <p>Analyzing your goal...</p>
+        </div>
+      `;
+    }
+
+    function renderAISuggestions(data) {
+      const a = data.analysis;
+      const badges = ['specific', 'measurable', 'achievable', 'relevant', 'timeBound'].map(key => {
+        const item = a[key];
+        const label = key.charAt(0).toUpperCase();
+        return `<span class="smart-badge ${item.pass ? 'pass' : 'fail'}" title="${item.feedback}">${label}</span>`;
+      }).join('');
+
+      const milestonesHtml = data.suggestedMilestones.map(m => `
+        <div class="ai-milestone">
+          <div class="ai-milestone-info">
+            <div class="ai-milestone-title">${escapeHtml(m.title)}</div>
+            <div class="ai-milestone-meta">${m.targetPercent}% by ${new Date(m.targetDate).toLocaleDateString()}</div>
+          </div>
+        </div>
+      `).join('');
+
+      document.getElementById('ai-modal-body').innerHTML = `
+        <div class="ai-section">
+          <h4>📊 SMART Analysis</h4>
+          <p>${badges}</p>
+          <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
+            ${data.isSmart ? '✅ Your goal is already SMART!' : '💡 Here\'s how to make it better:'}
+          </p>
+        </div>
+        ${!data.isSmart ? `
+          <div class="ai-section">
+            <h4>✨ Improved Goal</h4>
+            <div class="ai-improved-goal">${escapeHtml(data.improvedGoal)}</div>
+            ${data.improvedDescription ? `<p style="margin-top: 0.5rem; font-size: 0.9rem;">${escapeHtml(data.improvedDescription)}</p>` : ''}
+          </div>
+        ` : ''}
+        <div class="ai-section">
+          <h4>🎯 Suggested Milestones</h4>
+          ${milestonesHtml}
+        </div>
+      `;
+      document.getElementById('ai-modal-footer').classList.remove('hidden');
+    }
+
+    window.closeAIModal = () => {
+      document.getElementById('ai-modal').classList.add('hidden');
+      aiSuggestions = null;
+    };
+
+    window.acceptAISuggestions = () => {
+      if (!aiSuggestions) return;
+      document.getElementById('title').value = aiSuggestions.improvedGoal;
+      if (aiSuggestions.improvedDescription) {
+        document.getElementById('description').value = aiSuggestions.improvedDescription;
+      }
+      editingMilestones = aiSuggestions.suggestedMilestones.map((m, i) => ({
+        id: Date.now().toString() + i,
+        title: m.title,
+        targetPercent: m.targetPercent,
+        targetDate: m.targetDate
+      }));
+      renderMilestoneInputs();
+      closeAIModal();
+    };
+
     // Resolution form
     document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
@@ -720,6 +922,24 @@
       const description = document.getElementById('description').value.trim();
       const editId = document.getElementById('edit-id').value;
 
+      // For new resolutions without milestones, offer AI analysis
+      if (!editId && editingMilestones.length === 0) {
+        showAIModal();
+        const analysis = await analyzeGoal(title, description);
+        if (analysis) {
+          aiSuggestions = analysis;
+          renderAISuggestions(analysis);
+          return; // Wait for user to accept or skip
+        } else {
+          closeAIModal();
+          // Continue with save if AI fails
+        }
+      }
+
+      await saveResolution(title, description, editId);
+    });
+
+    async function saveResolution(title, description, editId) {
       const milestones = editingMilestones.filter(m => m.title.trim()).map(m => ({
         id: m.id,
         title: m.title.trim(),
@@ -741,58 +961,208 @@
         await logActivity('new_resolution', { id: docRef.id, title });
         resetForm();
       }
-    });
+    }
 
-    document.getElementById('cancel-btn').addEventListener('click', resetForm);
+    // Update closeAIModal to allow saving original
+    window.closeAIModal = () => {
+      document.getElementById('ai-modal').classList.add('hidden');
+      if (aiSuggestions) {
+        // User chose to keep original, save it now
+        const title = document.getElementById('title').value.trim();
+        const description = document.getElementById('description').value.trim();
+        saveResolution(title, description, '');
+      }
+      aiSuggestions = null;
+    };
+
+    window.acceptAISuggestions = () => {
+      if (!aiSuggestions) return;
+      const title = aiSuggestions.improvedGoal;
+      const description = aiSuggestions.improvedDescription || document.getElementById('description').value.trim();
+      document.getElementById('title').value = title;
+      document.getElementById('description').value = description;
+      editingMilestones = aiSuggestions.suggestedMilestones.map((m, i) => ({
+        id: Date.now().toString() + i,
+        title: m.title,
+        targetPercent: m.targetPercent,
+        targetDate: m.targetDate
+      }));
+      renderMilestoneInputs();
+      document.getElementById('ai-modal').classList.add('hidden');
+      // Save with suggestions
+      saveResolution(title, description, '');
+      aiSuggestions = null;
+    };
 
     function resetForm() {
-      document.getElementById('title').value = '';
-      document.getElementById('description').value = '';
+      document.getElementById('resolution-form').reset();
       document.getElementById('edit-id').value = '';
-      document.getElementById('form-title').textContent = 'Add Resolution';
-      document.getElementById('submit-btn').textContent = 'Add Resolution';
-      document.getElementById('cancel-btn').classList.add('hidden');
+      document.getElementById('form-title').textContent = 'Add New Resolution';
       editingMilestones = [];
       renderMilestoneInputs();
     }
 
-    window.editResolution = (id) => {
-      const res = resolutions.find(r => r.id === id);
-      if (!res) return;
-      document.getElementById('title').value = res.title;
-      document.getElementById('description').value = res.description || '';
-      document.getElementById('edit-id').value = id;
-      document.getElementById('form-title').textContent = 'Edit Resolution';
-      document.getElementById('submit-btn').textContent = 'Update';
-      document.getElementById('cancel-btn').classList.remove('hidden');
-      editingMilestones = (res.milestones || []).map(m => ({
-        id: m.id,
-        title: m.title,
-        targetPercent: m.targetPercent,
-        targetDate: m.targetDate ? new Date(m.targetDate.seconds * 1000).toISOString().split('T')[0] : ''
-      }));
-      renderMilestoneInputs();
-      document.getElementById('title').focus();
-    };
+    window.cancelEdit = resetForm;
 
-    window.deleteResolution = async (id) => { if (confirm('Delete this resolution?')) await deleteDoc(doc(db, 'resolutions', id)); };
-
-    window.updateProgress = async (id, value, oldValue) => {
-      const progress = parseInt(value);
-      const wasComplete = oldValue === 100;
-      const isComplete = progress === 100;
-      await updateDoc(doc(db, 'resolutions', id), { progress, completedAt: isComplete ? serverTimestamp() : null });
-      const res = resolutions.find(r => r.id === id);
-      if (res) {
-        if (isComplete && !wasComplete) {
-          await logActivity('completion', res);
-        } else if (Math.abs(progress - oldValue) >= 10) {
-          await logActivity('progress_update', res, { oldProgress: oldValue, newProgress: progress });
-        }
+    window.editResolution = async (id) => {
+      const docSnap = await getDoc(doc(db, 'resolutions', id));
+      if (docSnap.exists()) {
+        const data = docSnap.data();
+        document.getElementById('title').value = data.title;
+        document.getElementById('description').value = data.description || '';
+        document.getElementById('edit-id').value = id;
+        document.getElementById('form-title').textContent = 'Edit Resolution';
+        editingMilestones = (data.milestones || []).map(m => ({
+          id: m.id,
+          title: m.title,
+          targetPercent: m.targetPercent,
+          targetDate: m.targetDate ? (m.targetDate.toDate ? m.targetDate.toDate().toISOString().split('T')[0] : m.targetDate) : ''
+        }));
+        renderMilestoneInputs();
+        document.querySelector('.add-form').scrollIntoView({ behavior: 'smooth' });
       }
     };
 
-    window.shareResolution = () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Link copied!'); };
+    window.deleteResolution = async (id) => {
+      if (confirm('Are you sure you want to delete this resolution?')) {
+        await deleteDoc(doc(db, 'resolutions', id));
+      }
+    };
+
+    window.updateProgress = async (id, newProgress) => {
+      const docRef = doc(db, 'resolutions', id);
+      const docSnap = await getDoc(docRef);
+      if (!docSnap.exists()) return;
+
+      const data = docSnap.data();
+      const oldProgress = data.progress;
+      const updates = { progress: newProgress };
+
+      // Check milestones
+      if (data.milestones) {
+        updates.milestones = data.milestones.map(m => {
+          if (newProgress >= m.targetPercent && !m.completedAt) {
+            return { ...m, completedAt: Timestamp.now() };
+          }
+          return m;
+        });
+      }
+
+      // Mark complete if 100%
+      if (newProgress === 100 && oldProgress !== 100) {
+        updates.completedAt = serverTimestamp();
+        await logActivity('completion', { id, title: data.title });
+      } else if (oldProgress !== newProgress) {
+        await logActivity('progress_update', { id, title: data.title, oldProgress, newProgress });
+      }
+
+      await updateDoc(docRef, updates);
+    };
+
+    window.shareResolution = async (id) => {
+      const url = `${window.location.origin}${window.location.pathname}?view=${id}`;
+      if (navigator.share) {
+        await navigator.share({ title: '2026 Resolution', url });
+      } else {
+        await navigator.clipboard.writeText(url);
+        alert('Link copied to clipboard!');
+      }
+    };
+
+    // Initialize
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        currentUser = user;
+        await setDoc(doc(db, 'users', user.uid), {
+          displayName: user.displayName || user.email.split('@')[0],
+          email: user.email,
+          photoURL: user.photoURL || null,
+          lastActive: serverTimestamp()
+        }, { merge: true });
+        updateUserUI();
+        subscribeToResolutions();
+      } else {
+        currentUser = null;
+        updateUserUI();
+      }
+    });
+
+    // Tab switching
+    document.querySelectorAll('.nav-tab').forEach(tab => {
+      tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        tab.classList.add('active');
+        const view = tab.dataset.view;
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById(`${view}-view`).classList.remove('hidden');
+        if (view === 'feed') loadActivityFeed();
+        if (view === 'community') loadCommunity();
+      });
+    });
+
+    async function loadActivityFeed() {
+      const feedEl = document.getElementById('activity-feed');
+      feedEl.innerHTML = '<p style="color:#666;">Loading activity...</p>';
+      const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'), limit(50));
+      const snapshot = await getDocs(q);
+      if (snapshot.empty) {
+        feedEl.innerHTML = '<p style="color:#666;">No activity yet. Be the first to add a resolution!</p>';
+        return;
+      }
+      feedEl.innerHTML = '';
+      snapshot.forEach(d => {
+        feedEl.innerHTML += renderActivityCard({ id: d.id, ...d.data() });
+      });
+    }
+
+    async function loadCommunity() {
+      const listEl = document.getElementById('users-list');
+      listEl.innerHTML = '<p style="color:#666;">Loading users...</p>';
+      const snapshot = await getDocs(collection(db, 'users'));
+      if (snapshot.empty) {
+        listEl.innerHTML = '<p style="color:#666;">No users yet.</p>';
+        return;
+      }
+      listEl.innerHTML = '';
+      for (const d of snapshot.docs) {
+        const userData = d.data();
+        const resSnap = await getDocs(query(collection(db, 'resolutions'), where('userId', '==', d.id)));
+        const resCount = resSnap.size;
+        const avatar = userData.photoURL
+          ? `<img src="${escapeHtml(userData.photoURL)}" alt="">`
+          : escapeHtml((userData.displayName || 'U')[0].toUpperCase());
+        listEl.innerHTML += `
+          <div class="user-card" onclick="viewProfile('${d.id}')">
+            <div class="user-card-avatar">${avatar}</div>
+            <div class="user-card-name">${escapeHtml(userData.displayName || 'Anonymous')}</div>
+            <div class="user-card-stats">${resCount} resolution${resCount !== 1 ? 's' : ''}</div>
+          </div>
+        `;
+      }
+    }
+
+    window.viewProfile = async (userId) => {
+      const userSnap = await getDoc(doc(db, 'users', userId));
+      const resSnap = await getDocs(query(collection(db, 'resolutions'), where('userId', '==', userId), where('isPublic', '==', true)));
+      if (!userSnap.exists()) return;
+      const userData = userSnap.data();
+      const avatar = userData.photoURL
+        ? `<img src="${escapeHtml(userData.photoURL)}" alt="" style="width:60px;height:60px;border-radius:50%;">`
+        : `<div style="width:60px;height:60px;border-radius:50%;background:#667eea;color:white;display:flex;align-items:center;justify-content:center;font-size:1.5rem;">${escapeHtml((userData.displayName || 'U')[0].toUpperCase())}</div>`;
+      document.getElementById('profile-user-info').innerHTML = `
+        ${avatar}
+        <h2 style="margin:0.5rem 0 0;">${escapeHtml(userData.displayName || 'Anonymous')}</h2>
+      `;
+      renderProfileResolutions(resSnap.docs.map(d => ({ id: d.id, ...d.data() })));
+      document.getElementById('community-view').classList.add('hidden');
+      document.getElementById('profile-view').classList.remove('hidden');
+    };
+
+    window.closeProfile = () => {
+      document.getElementById('profile-view').classList.add('hidden');
+      document.getElementById('community-view').classList.remove('hidden');
+    };
+
   </script>
 </body>
 </html>
