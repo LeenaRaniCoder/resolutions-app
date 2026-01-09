@@ -84,9 +84,14 @@ Keep milestones practical and achievable within ${currentYear}. Only include 3-4
     if (!response.ok) {
       const error = await response.text();
       console.error('OpenAI error:', error);
-      return new Response(JSON.stringify({ error: 'AI service error' }), {
+      let errorMessage = 'AI service error';
+      try {
+        const errorData = JSON.parse(error);
+        errorMessage = errorData.error?.message || errorMessage;
+      } catch (e) {}
+      return new Response(JSON.stringify({ error: errorMessage }), {
         status: 500,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { 'Content-Type': 'application/json', 'Access-Control-Allow-Origin': '*' },
       });
     }
 
