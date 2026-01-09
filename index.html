@@ -1048,24 +1048,6 @@
       }
     };
 
-    // Initialize
-    onAuthStateChanged(auth, async (user) => {
-      if (user) {
-        currentUser = user;
-        await setDoc(doc(db, 'users', user.uid), {
-          displayName: user.displayName || user.email.split('@')[0],
-          email: user.email,
-          photoURL: user.photoURL || null,
-          lastActive: serverTimestamp()
-        }, { merge: true });
-        updateUserUI();
-        subscribeToResolutions();
-      } else {
-        currentUser = null;
-        updateUserUI();
-      }
-    });
-
     // Tab switching
     document.querySelectorAll('.nav-tab').forEach(tab => {
       tab.addEventListener('click', () => {
@@ -1078,47 +1060,6 @@
         if (view === 'community') loadCommunity();
       });
     });
-
-    async function loadActivityFeed() {
-      const feedEl = document.getElementById('activity-feed');
-      feedEl.innerHTML = '<p style="color:#666;">Loading activity...</p>';
-      const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'), limit(50));
-      const snapshot = await getDocs(q);
-      if (snapshot.empty) {
-        feedEl.innerHTML = '<p style="color:#666;">No activity yet. Be the first to add a resolution!</p>';
-        return;
-      }
-      feedEl.innerHTML = '';
-      snapshot.forEach(d => {
-        feedEl.innerHTML += renderActivityCard({ id: d.id, ...d.data() });
-      });
-    }
-
-    async function loadCommunity() {
-      const listEl = document.getElementById('users-list');
-      listEl.innerHTML = '<p style="color:#666;">Loading users...</p>';
-      const snapshot = await getDocs(collection(db, 'users'));
-      if (snapshot.empty) {
-        listEl.innerHTML = '<p style="color:#666;">No users yet.</p>';
-        return;
-      }
-      listEl.innerHTML = '';
-      for (const d of snapshot.docs) {
-        const userData = d.data();
-        const resSnap = await getDocs(query(collection(db, 'resolutions'), where('userId', '==', d.id)));
-        const resCount = resSnap.size;
-        const avatar = userData.photoURL
-          ? `<img src="${escapeHtml(userData.photoURL)}" alt="">`
-          : escapeHtml((userData.displayName || 'U')[0].toUpperCase());
-        listEl.innerHTML += `
-          <div class="user-card" onclick="viewProfile('${d.id}')">
-            <div class="user-card-avatar">${avatar}</div>
-            <div class="user-card-name">${escapeHtml(userData.displayName || 'Anonymous')}</div>
-            <div class="user-card-stats">${resCount} resolution${resCount !== 1 ? 's' : ''}</div>
-          </div>
-        `;
-      }
-    }
 
     window.viewProfile = async (userId) => {
       const userSnap = await getDoc(doc(db, 'users', userId));
