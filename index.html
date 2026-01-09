@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>2025 Resolutions Tracker</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      padding: 2rem;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: white;
+      text-align: center;
+      margin-bottom: 2rem;
+      font-size: 2.5rem;
+      text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+    }
+
+    .add-form {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+      margin-bottom: 2rem;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .form-group input,
+    .form-group textarea {
+      width: 100%;
+      padding: 0.75rem;
+      border: 2px solid #e0e0e0;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s;
+    }
+
+    .form-group input:focus,
+    .form-group textarea:focus {
+      outline: none;
+      border-color: #667eea;
+    }
+
+    .form-group textarea {
+      resize: vertical;
+      min-height: 80px;
+    }
+
+    .btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+
+    .btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-cancel {
+      background: #e0e0e0;
+      color: #333;
+      margin-left: 0.5rem;
+    }
+
+    .btn-cancel:hover {
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+    }
+
+    .resolutions-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .resolution-card {
+      background: white;
+      padding: 1.5rem;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+
+    .resolution-card:hover {
+      transform: translateY(-2px);
+    }
+
+    .resolution-card.completed {
+      opacity: 0.7;
+      background: #f0fff0;
+    }
+
+    .resolution-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 0.5rem;
+    }
+
+    .resolution-title {
+      font-size: 1.25rem;
+      font-weight: 600;
+      color: #333;
+    }
+
+    .resolution-card.completed .resolution-title {
+      text-decoration: line-through;
+      color: #28a745;
+    }
+
+    .resolution-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-icon {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.25rem;
+      font-size: 1.25rem;
+      opacity: 0.6;
+      transition: opacity 0.2s;
+    }
+
+    .btn-icon:hover {
+      opacity: 1;
+    }
+
+    .resolution-description {
+      color: #666;
+      margin-bottom: 1rem;
+      font-size: 0.95rem;
+    }
+
+    .progress-container {
+      margin-top: 1rem;
+    }
+
+    .progress-header {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+      color: #666;
+    }
+
+    .progress-bar {
+      height: 12px;
+      background: #e0e0e0;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      border-radius: 6px;
+      transition: width 0.3s ease;
+    }
+
+    .progress-slider {
+      width: 100%;
+      margin-top: 0.5rem;
+      cursor: pointer;
+    }
+
+    .empty-state {
+      text-align: center;
+      color: white;
+      padding: 3rem;
+      background: rgba(255,255,255,0.1);
+      border-radius: 12px;
+    }
+
+    .empty-state h2 {
+      margin-bottom: 0.5rem;
+    }
+
+    .stats {
+      background: rgba(255,255,255,0.15);
+      padding: 1rem 1.5rem;
+      border-radius: 12px;
+      margin-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-around;
+      color: white;
+      text-align: center;
+    }
+
+    .stat-item {
+      flex: 1;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 700;
+    }
+
+    .stat-label {
+      font-size: 0.85rem;
+      opacity: 0.8;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>2025 Resolutions</h1>
+
+    <div class="stats" id="stats">
+      <div class="stat-item">
+        <div class="stat-value" id="total-count">0</div>
+        <div class="stat-label">Total</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="completed-count">0</div>
+        <div class="stat-label">Completed</div>
+      </div>
+      <div class="stat-item">
+        <div class="stat-value" id="avg-progress">0%</div>
+        <div class="stat-label">Avg Progress</div>
+      </div>
+    </div>
+
+    <div class="add-form">
+      <h2 id="form-title" style="margin-bottom: 1rem; color: #333;">Add Resolution</h2>
+      <form id="resolution-form">
+        <input type="hidden" id="edit-id">
+        <div class="form-group">
+          <label for="title">Resolution</label>
+          <input type="text" id="title" placeholder="e.g., Exercise 3 times a week" required>
+        </div>
+        <div class="form-group">
+          <label for="description">Description (optional)</label>
+          <textarea id="description" placeholder="Add more details about your goal..."></textarea>
+        </div>
+        <button type="submit" class="btn" id="submit-btn">Add Resolution</button>
+        <button type="button" class="btn btn-cancel" id="cancel-btn" style="display: none;">Cancel</button>
+      </form>
+    </div>
+
+    <div class="resolutions-list" id="resolutions-list"></div>
+  </div>
+
+  <script>
+    // State
+    let resolutions = JSON.parse(localStorage.getItem('resolutions')) || [];
+
+    // DOM Elements
+    const form = document.getElementById('resolution-form');
+    const titleInput = document.getElementById('title');
+    const descriptionInput = document.getElementById('description');
+    const editIdInput = document.getElementById('edit-id');
+    const formTitle = document.getElementById('form-title');
+    const submitBtn = document.getElementById('submit-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+    const listContainer = document.getElementById('resolutions-list');
+
+    // Save to localStorage
+    function save() {
+      localStorage.setItem('resolutions', JSON.stringify(resolutions));
+      updateStats();
+    }
+
+    // Update stats display
+    function updateStats() {
+      const total = resolutions.length;
+      const completed = resolutions.filter(r => r.progress === 100).length;
+      const avgProgress = total > 0
+        ? Math.round(resolutions.reduce((sum, r) => sum + r.progress, 0) / total)
+        : 0;
+
+      document.getElementById('total-count').textContent = total;
+      document.getElementById('completed-count').textContent = completed;
+      document.getElementById('avg-progress').textContent = avgProgress + '%';
+    }
+
+    // Generate unique ID
+    function generateId() {
+      return Date.now().toString(36) + Math.random().toString(36).substr(2);
+    }
+
+    // Render resolutions
+    function render() {
+      if (resolutions.length === 0) {
+        listContainer.innerHTML = `
+          <div class="empty-state">
+            <h2>No resolutions yet</h2>
+            <p>Add your first resolution above to get started!</p>
+          </div>
+        `;
+        return;
+      }
+
+      listContainer.innerHTML = resolutions.map(resolution => `
+        <div class="resolution-card ${resolution.progress === 100 ? 'completed' : ''}" data-id="${resolution.id}">
+          <div class="resolution-header">
+            <div class="resolution-title">${escapeHtml(resolution.title)}</div>
+            <div class="resolution-actions">
+              <button class="btn-icon" onclick="editResolution('${resolution.id}')" title="Edit">&#9998;</button>
+              <button class="btn-icon" onclick="deleteResolution('${resolution.id}')" title="Delete">&#128465;</button>
+            </div>
+          </div>
+          ${resolution.description ? `<div class="resolution-description">${escapeHtml(resolution.description)}</div>` : ''}
+          <div class="progress-container">
+            <div class="progress-header">
+              <span>Progress</span>
+              <span>${resolution.progress}%</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" style="width: ${resolution.progress}%"></div>
+            </div>
+            <input
+              type="range"
+              class="progress-slider"
+              min="0"
+              max="100"
+              value="${resolution.progress}"
+              onchange="updateProgress('${resolution.id}', this.value)"
+            >
+          </div>
+        </div>
+      `).join('');
+    }
+
+    // Escape HTML to prevent XSS
+    function escapeHtml(text) {
+      const div = document.createElement('div');
+      div.textContent = text;
+      return div.innerHTML;
+    }
+
+    // Add or update resolution
+    form.addEventListener('submit', (e) => {
+      e.preventDefault();
+
+      const title = titleInput.value.trim();
+      const description = descriptionInput.value.trim();
+      const editId = editIdInput.value;
+
+      if (editId) {
+        // Update existing
+        const index = resolutions.findIndex(r => r.id === editId);
+        if (index !== -1) {
+          resolutions[index].title = title;
+          resolutions[index].description = description;
+        }
+        resetForm();
+      } else {
+        // Add new
+        resolutions.push({
+          id: generateId(),
+          title,
+          description,
+          progress: 0,
+          createdAt: new Date().toISOString()
+        });
+      }
+
+      titleInput.value = '';
+      descriptionInput.value = '';
+      save();
+      render();
+    });
+
+    // Edit resolution
+    function editResolution(id) {
+      const resolution = resolutions.find(r => r.id === id);
+      if (!resolution) return;
+
+      titleInput.value = resolution.title;
+      descriptionInput.value = resolution.description || '';
+      editIdInput.value = id;
+      formTitle.textContent = 'Edit Resolution';
+      submitBtn.textContent = 'Update Resolution';
+      cancelBtn.style.display = 'inline-block';
+      titleInput.focus();
+    }
+
+    // Cancel edit
+    cancelBtn.addEventListener('click', resetForm);
+
+    function resetForm() {
+      titleInput.value = '';
+      descriptionInput.value = '';
+      editIdInput.value = '';
+      formTitle.textContent = 'Add Resolution';
+      submitBtn.textContent = 'Add Resolution';
+      cancelBtn.style.display = 'none';
+    }
+
+    // Delete resolution
+    function deleteResolution(id) {
+      if (confirm('Are you sure you want to delete this resolution?')) {
+        resolutions = resolutions.filter(r => r.id !== id);
+        save();
+        render();
+      }
+    }
+
+    // Update progress
+    function updateProgress(id, value) {
+      const resolution = resolutions.find(r => r.id === id);
+      if (resolution) {
+        resolution.progress = parseInt(value);
+        if (resolution.progress === 100) {
+          resolution.completedAt = new Date().toISOString();
+        } else {
+          resolution.completedAt = null;
+        }
+        save();
+        render();
+      }
+    }
+
+    // Initial render
+    render();
+    updateStats();
+  </script>
+</body>
+</html>
