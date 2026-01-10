@@ -1014,6 +1014,10 @@
         authContainer.classList.add('hidden');
         appContainer.classList.add('hidden');
         profileContainer.classList.remove('hidden');
+        // Hide fixed headers when viewing profile
+        document.getElementById('main-header').classList.add('hidden');
+        document.getElementById('guest-header').classList.add('hidden');
+        document.getElementById('fab-container').classList.add('hidden');
         loadProfileView(viewUserId);
       } else if (user) {
         currentUser = user;
@@ -1529,16 +1533,34 @@
 
     // Profile view
     async function loadProfileView(userId) {
-      const userRef = doc(db, 'users', userId);
-      const userSnap = await getDoc(userRef);
-      if (userSnap.exists()) {
-        document.getElementById('profile-name').textContent = `${userSnap.data().displayName}'s Resolutions`;
+      try {
+        const userRef = doc(db, 'users', userId);
+        const userSnap = await getDoc(userRef);
+        if (userSnap.exists()) {
+          document.getElementById('profile-name').textContent = `${userSnap.data().displayName}'s Resolutions`;
+        } else {
+          document.getElementById('profile-name').textContent = `User's Resolutions`;
+        }
+
+        // Query user's resolutions - filter isPublic client-side to avoid composite index requirement
+        const q = query(collection(db, 'resolutions'), where('userId', '==', userId), orderBy('createdAt', 'desc'));
+        onSnapshot(q, (snapshot) => {
+          const profileResolutions = snapshot.docs
+            .map(doc => ({ id: doc.id, ...doc.data() }))
+            .filter(res => res.isPublic !== false); // Default to public if not set
+          renderProfileResolutions(profileResolutions);
+        }, (error) => {
+          console.error('Error loading profile resolutions:', error);
+          document.getElementById('profile-resolutions-list').innerHTML = `
+            <div class="empty-state">
+              <h3>Unable to load resolutions</h3>
+              <p>Please try again later.</p>
+            </div>
+          `;
+        });
+      } catch (error) {
+        console.error('Error loading profile:', error);
       }
-      const q = query(collection(db, 'resolutions'), where('userId', '==', userId), where('isPublic', '==', true), orderBy('createdAt', 'desc'));
-      onSnapshot(q, (snapshot) => {
-        const profileResolutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        renderProfileResolutions(profileResolutions);
-      });
     }
 
     function renderProfileResolutions(resolutions) {
