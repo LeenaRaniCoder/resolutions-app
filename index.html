@@ -248,6 +248,13 @@
     .activity-meta { font-size: 0.8rem; color: #999; }
     .activity-comment { font-size: 0.9rem; color: #555; font-style: italic; margin: 0.5rem 0; padding: 0.5rem; background: #f5f5f5; border-radius: 6px; }
     .activity-icon { font-size: 1.5rem; }
+    .activity-actions { display: flex; gap: 0.5rem; margin: 0.5rem 0; }
+    .activity-action-btn { background: none; border: none; color: #667eea; cursor: pointer; font-size: 0.85rem; padding: 0.25rem 0.5rem; border-radius: 4px; }
+    .activity-action-btn:hover { background: #f0f0f0; }
+    .activity-delete-btn { color: #e74c3c; }
+    .activity-comment-form { display: flex; gap: 0.5rem; margin: 0.5rem 0; }
+    .activity-comment-form input { flex: 1; padding: 0.5rem; border: 1px solid #ddd; border-radius: 4px; font-size: 0.9rem; }
+    .activity-comment-form input:focus { outline: none; border-color: #667eea; }
 
     /* Community */
     .community-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 1rem; }
@@ -590,18 +597,78 @@
       const avatar = activity.userPhotoURL
         ? `<img src="${activity.userPhotoURL}" alt="">`
         : escapeHtml((activity.userDisplayName || '?')[0].toUpperCase());
+
+      const isOwner = currentUser && activity.userId === currentUser.uid;
+      const canComment = currentUser && activity.resolutionId && activity.type !== 'comment';
+
       return `
-        <div class="activity-card">
+        <div class="activity-card" data-activity-id="${activity.id}" data-resolution-id="${activity.resolutionId || ''}">
           <div class="activity-avatar">${avatar}</div>
           <div class="activity-content">
             <div class="activity-text">${text}</div>
             ${extraContent}
+            <div class="activity-actions">
+              ${canComment ? `<button class="activity-action-btn" onclick="showActivityComment('${activity.id}', '${activity.resolutionId}')">💬 Comment</button>` : ''}
+              ${isOwner ? `<button class="activity-action-btn activity-delete-btn" onclick="deleteActivity('${activity.id}')">🗑 Delete</button>` : ''}
+            </div>
+            <div class="activity-comment-form hidden" id="activity-comment-${activity.id}">
+              <input type="text" placeholder="Write a comment..." id="activity-comment-input-${activity.id}">
+              <button class="btn btn-small" onclick="postActivityComment('${activity.id}', '${activity.resolutionId}')">Post</button>
+            </div>
             <div class="activity-meta">${formatTimeAgo(activity.createdAt)}</div>
           </div>
           <div class="activity-icon">${icon}</div>
         </div>
       `;
     }
+
+    // Activity actions
+    window.deleteActivity = async (activityId) => {
+      if (!currentUser) return;
+      if (confirm('Delete this activity?')) {
+        try {
+          await deleteDoc(doc(db, 'activities', activityId));
+        } catch (error) {
+          console.error('Delete activity error:', error);
+          alert('Failed to delete: ' + error.message);
+        }
+      }
+    };
+
+    window.showActivityComment = (activityId, resolutionId) => {
+      const form = document.getElementById(`activity-comment-${activityId}`);
+      form.classList.toggle('hidden');
+      if (!form.classList.contains('hidden')) {
+        document.getElementById(`activity-comment-input-${activityId}`).focus();
+      }
+    };
+
+    window.postActivityComment = async (activityId, resolutionId) => {
+      if (!currentUser || !resolutionId) return;
+      const input = document.getElementById(`activity-comment-input-${activityId}`);
+      const text = input.value.trim();
+      if (!text) return;
+
+      try {
+        await addDoc(collection(db, 'resolutions', resolutionId, 'comments'), {
+          userId: currentUser.uid,
+          userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
+          text,
+          createdAt: serverTimestamp()
+        });
+
+        // Get resolution title for activity log
+        const resDoc = await getDoc(doc(db, 'resolutions', resolutionId));
+        const resTitle = resDoc.exists() ? resDoc.data().title : 'a resolution';
+        await logActivity('comment', { id: resolutionId, title: resTitle }, { commentText: text });
+
+        input.value = '';
+        document.getElementById(`activity-comment-${activityId}`).classList.add('hidden');
+      } catch (error) {
+        console.error('Comment error:', error);
+        alert('Failed to post comment: ' + error.message);
+      }
+    };
 
     // Community
     async function loadCommunity() {
