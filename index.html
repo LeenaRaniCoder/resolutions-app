@@ -39,27 +39,24 @@
       margin-bottom: 1.5rem;
     }
     .feature-pill {
-      background: rgba(255,255,255,0.15);
-      backdrop-filter: blur(10px);
-      color: white;
-      padding: 0.5rem 1rem;
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      padding: 0.4rem 0.9rem;
       border-radius: 50px;
-      font-size: 0.8rem;
-      font-weight: 600;
+      font-size: 0.75rem;
+      font-weight: 500;
       display: flex;
       align-items: center;
       gap: 0.4rem;
-      transition: all 0.2s ease;
-    }
-    .feature-pill:hover {
-      background: rgba(255,255,255,0.25);
-      transform: translateY(-2px);
+      cursor: default;
+      user-select: none;
+      letter-spacing: 0.02em;
     }
     .feature-pill .pill-icon {
-      font-size: 1rem;
+      font-size: 0.9rem;
     }
     @media (max-width: 480px) {
-      .feature-pill { font-size: 0.75rem; padding: 0.4rem 0.8rem; }
+      .feature-pill { font-size: 0.7rem; padding: 0.35rem 0.7rem; }
     }
 
     /* Navigation Tabs */
