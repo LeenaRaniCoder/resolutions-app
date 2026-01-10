@@ -246,6 +246,7 @@
     .activity-text { font-size: 0.95rem; color: #333; margin-bottom: 0.25rem; }
     .activity-text strong { color: #667eea; }
     .activity-meta { font-size: 0.8rem; color: #999; }
+    .activity-comment { font-size: 0.9rem; color: #555; font-style: italic; margin: 0.5rem 0; padding: 0.5rem; background: #f5f5f5; border-radius: 6px; }
     .activity-icon { font-size: 1.5rem; }
 
     /* Community */
@@ -545,10 +546,16 @@
       const icons = { new_resolution: '🎯', progress_update: '📈', comment: '💬', completion: '🎉' };
       const icon = icons[activity.type] || '📌';
       let text = '';
+      let extraContent = '';
       switch (activity.type) {
         case 'new_resolution': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> added a new resolution: "${escapeHtml(activity.resolutionTitle)}"`; break;
         case 'progress_update': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> updated progress on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%`; break;
-        case 'comment': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> commented on "${escapeHtml(activity.resolutionTitle)}"`; break;
+        case 'comment':
+          text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> commented on "${escapeHtml(activity.resolutionTitle)}"`;
+          if (activity.data?.commentText) {
+            extraContent = `<div class="activity-comment">"${escapeHtml(activity.data.commentText)}"</div>`;
+          }
+          break;
         case 'completion': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> completed "${escapeHtml(activity.resolutionTitle)}" 🎉`; break;
       }
       const avatar = activity.userPhotoURL
@@ -559,6 +566,7 @@
           <div class="activity-avatar">${avatar}</div>
           <div class="activity-content">
             <div class="activity-text">${text}</div>
+            ${extraContent}
             <div class="activity-meta">${formatTimeAgo(activity.createdAt)}</div>
           </div>
           <div class="activity-icon">${icon}</div>
