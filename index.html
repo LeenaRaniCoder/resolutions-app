@@ -1031,18 +1031,18 @@
     }
 
     // Update closeAIModal to allow saving original
-    window.closeAIModal = () => {
+    window.closeAIModal = async () => {
       document.getElementById('ai-modal').classList.add('hidden');
       if (aiSuggestions) {
         // User chose to keep original, save it now
         const title = document.getElementById('title').value.trim();
         const description = document.getElementById('description').value.trim();
-        saveResolution(title, description, '');
+        await saveResolution(title, description, '');
       }
       aiSuggestions = null;
     };
 
-    window.acceptAISuggestions = () => {
+    window.acceptAISuggestions = async () => {
       if (!aiSuggestions) return;
       const title = aiSuggestions.improvedGoal;
       const description = aiSuggestions.improvedDescription || document.getElementById('description').value.trim();
@@ -1054,10 +1054,9 @@
         targetPercent: m.targetPercent,
         targetDate: m.targetDate
       }));
-      renderMilestoneInputs();
       document.getElementById('ai-modal').classList.add('hidden');
       // Save with suggestions
-      saveResolution(title, description, '');
+      await saveResolution(title, description, '');
       aiSuggestions = null;
     };
 
