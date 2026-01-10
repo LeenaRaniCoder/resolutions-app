@@ -1123,6 +1123,13 @@
     window.deleteResolution = async (id) => {
       if (confirm('Are you sure you want to delete this resolution?')) {
         try {
+          // Delete associated activities from the feed
+          const activitiesQuery = query(collection(db, 'activities'), where('resolutionId', '==', id));
+          const activitiesSnapshot = await getDocs(activitiesQuery);
+          const deletePromises = activitiesSnapshot.docs.map(doc => deleteDoc(doc.ref));
+          await Promise.all(deletePromises);
+
+          // Delete the resolution
           await deleteDoc(doc(db, 'resolutions', id));
         } catch (error) {
           console.error('Delete error:', error);
