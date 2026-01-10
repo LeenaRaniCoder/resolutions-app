@@ -437,9 +437,6 @@
     let editingMilestones = [];
     let aiSuggestions = null;
 
-    // OpenAI API key (stored in Netlify env, accessed via serverless function)
-    const ANALYZE_GOAL_URL = '/.netlify/functions/analyze-goal';
-
     const loadingEl = document.getElementById('loading');
     const authContainer = document.getElementById('auth-container');
     const appContainer = document.getElementById('app-container');
