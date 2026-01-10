@@ -381,11 +381,11 @@
       <div class="resolutions-list" id="profile-resolutions-list"></div>
     </div>
 
-    <!-- AI Suggestions Modal -->
+    <!-- SMART Goal Coach Modal -->
     <div id="ai-modal" class="modal-overlay hidden">
       <div class="modal">
         <div class="modal-header">
-          <h3>🤖 AI Goal Coach</h3>
+          <h3>🎯 SMART Goal Coach</h3>
           <button class="modal-close" onclick="closeAIModal()">×</button>
         </div>
         <div class="modal-body" id="ai-modal-body">
@@ -827,35 +827,101 @@
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
     document.getElementById('share-profile').addEventListener('click', () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Profile link copied!'); });
 
-    // AI Goal Analysis
-    async function analyzeGoal(title, description) {
-      try {
-        const response = await fetch(ANALYZE_GOAL_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description })
-        });
-        const data = await response.json();
-        if (!response.ok) {
-          console.error('AI analysis error:', data);
-          throw new Error(data.error || 'Analysis failed');
+    // Heuristic-based Goal Analysis (no API required)
+    function analyzeGoal(title, description) {
+      const text = (title + ' ' + (description || '')).toLowerCase();
+      const currentYear = new Date().getFullYear();
+
+      // Check for specific indicators
+      const vagueWords = ['more', 'better', 'less', 'improve', 'some', 'try', 'want to', 'hope to'];
+      const hasVagueWords = vagueWords.some(w => text.includes(w));
+      const hasSpecificAction = /\b(run|walk|read|write|save|learn|practice|exercise|eat|drink|sleep|meditate|study|work|call|visit)\b/.test(text);
+      const isSpecific = hasSpecificAction && !hasVagueWords;
+
+      // Check for measurable indicators
+      const hasNumbers = /\d+/.test(text);
+      const hasMeasureWords = /(times|days|hours|minutes|pounds|kg|miles|km|books|pages|dollars|\$|%|percent)/.test(text);
+      const isMeasurable = hasNumbers || hasMeasureWords;
+
+      // Check for time-bound indicators
+      const hasTimeWords = /(daily|weekly|monthly|every day|each week|by |before |until |deadline|january|february|march|april|may|june|july|august|september|october|november|december)/.test(text);
+      const isTimeBound = hasTimeWords || /\b\d{4}\b/.test(text);
+
+      // Always assume achievable and relevant for user-set goals
+      const isAchievable = true;
+      const isRelevant = true;
+
+      const isSmart = isSpecific && isMeasurable && isTimeBound;
+
+      // Generate improved goal suggestion
+      let improvedGoal = title;
+      let improvedDescription = description || '';
+
+      if (!isSmart) {
+        // Common goal improvements
+        const improvements = {
+          'lose weight': 'Lose 20 pounds by exercising 3 times per week',
+          'exercise': 'Exercise for 30 minutes, 4 times per week',
+          'read more': 'Read 24 books this year (2 per month)',
+          'save money': 'Save $5,000 by putting aside $420 each month',
+          'learn': 'Complete one online course per quarter',
+          'eat healthy': 'Eat 5 servings of vegetables daily',
+          'drink water': 'Drink 8 glasses of water every day',
+          'meditate': 'Meditate for 10 minutes every morning',
+          'sleep': 'Get 7-8 hours of sleep each night',
+          'run': 'Run a 5K by training 3 times per week',
+        };
+
+        for (const [key, suggestion] of Object.entries(improvements)) {
+          if (text.includes(key)) {
+            improvedGoal = suggestion;
+            break;
+          }
         }
-        return data;
-      } catch (error) {
-        console.error('AI analysis error:', error);
-        // Show error in modal instead of silently failing
-        document.getElementById('ai-modal-body').innerHTML = `
-          <div style="text-align:center;padding:1rem;">
-            <p style="color:#e74c3c;margin-bottom:1rem;">Could not analyze goal: ${error.message}</p>
-            <p style="color:#666;">Your resolution will be saved as-is.</p>
-          </div>
-        `;
-        document.getElementById('ai-modal-footer').innerHTML = `
-          <button class="btn" onclick="closeAIModal()">Continue</button>
-        `;
-        document.getElementById('ai-modal-footer').classList.remove('hidden');
-        return null;
+
+        if (improvedGoal === title) {
+          // Generic improvement
+          if (!hasNumbers) improvedGoal = title + ' (add a specific number/target)';
+          if (!hasTimeWords) improvedDescription = 'Aim to complete by December ' + currentYear;
+        }
       }
+
+      // Generate milestones
+      const suggestedMilestones = [
+        { title: 'Complete initial planning and setup', targetPercent: 25, targetDate: `${currentYear}-03-31` },
+        { title: 'Reach halfway point', targetPercent: 50, targetDate: `${currentYear}-06-30` },
+        { title: 'Push through the final stretch', targetPercent: 75, targetDate: `${currentYear}-09-30` },
+        { title: 'Achieve the goal!', targetPercent: 100, targetDate: `${currentYear}-12-31` }
+      ];
+
+      return {
+        isSmart,
+        analysis: {
+          specific: {
+            pass: isSpecific,
+            feedback: isSpecific ? 'Goal has a clear action' : 'Try adding a specific action (e.g., run, read, save)'
+          },
+          measurable: {
+            pass: isMeasurable,
+            feedback: isMeasurable ? 'Goal has measurable targets' : 'Add numbers or quantities to track progress'
+          },
+          achievable: {
+            pass: isAchievable,
+            feedback: 'You know your capabilities best!'
+          },
+          relevant: {
+            pass: isRelevant,
+            feedback: 'This goal matters to you'
+          },
+          timeBound: {
+            pass: isTimeBound,
+            feedback: isTimeBound ? 'Goal has a timeframe' : 'Add a deadline or frequency (e.g., daily, by June)'
+          }
+        },
+        improvedGoal,
+        improvedDescription,
+        suggestedMilestones
+      };
     }
 
     function showAIModal() {
@@ -864,7 +930,7 @@
       document.getElementById('ai-modal-body').innerHTML = `
         <div class="ai-loading">
           <div class="spinner"></div>
-          <p>Analyzing your goal...</p>
+          <p>Checking your goal...</p>
         </div>
       `;
     }
@@ -912,28 +978,20 @@
     // Resolution form
     document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
-      console.log('Form submitted');
 
       try {
         const title = document.getElementById('title').value.trim();
         const description = document.getElementById('description').value.trim();
         const editId = document.getElementById('edit-id').value;
 
-        console.log('Title:', title, 'EditId:', editId, 'Milestones:', editingMilestones.length);
-
-        // For new resolutions without milestones, offer AI analysis
+        // For new resolutions without milestones, offer SMART analysis
         if (!editId && editingMilestones.length === 0) {
-          console.log('Showing AI modal');
           showAIModal();
-          const analysis = await analyzeGoal(title, description);
-          console.log('Analysis result:', analysis);
+          const analysis = analyzeGoal(title, description);
           if (analysis) {
             aiSuggestions = analysis;
             renderAISuggestions(analysis);
             return; // Wait for user to accept or skip
-          } else {
-            // Error was shown in modal, wait for user to click Continue
-            return;
           }
         }
 
