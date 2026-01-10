@@ -591,16 +591,20 @@
 
     // Log activity
     async function logActivity(type, resolution, data = {}) {
-      await addDoc(collection(db, 'activities'), {
-        type,
-        userId: currentUser.uid,
-        userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
-        userPhotoURL: currentUser.photoURL || null,
-        resolutionId: resolution.id || '',
-        resolutionTitle: resolution.title || '',
-        data,
-        createdAt: serverTimestamp()
-      });
+      try {
+        await addDoc(collection(db, 'activities'), {
+          type,
+          userId: currentUser.uid,
+          userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
+          userPhotoURL: currentUser.photoURL || null,
+          resolutionId: resolution.id || '',
+          resolutionTitle: resolution.title || '',
+          data,
+          createdAt: serverTimestamp()
+        });
+      } catch (error) {
+        console.error('Failed to log activity:', error);
+      }
     }
 
     // Profile view
