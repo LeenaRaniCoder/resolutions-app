@@ -509,6 +509,17 @@
         resolutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         renderResolutions();
         updateStats();
+      }, (error) => {
+        console.error('Resolutions subscription error:', error);
+        // If index error, try without ordering
+        if (error.code === 'failed-precondition') {
+          const simpleQ = query(collection(db, 'resolutions'), where('userId', '==', currentUser.uid));
+          unsubscribeResolutions = onSnapshot(simpleQ, (snapshot) => {
+            resolutions = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderResolutions();
+            updateStats();
+          });
+        }
       });
     }
 
@@ -980,8 +991,10 @@
     }
 
     // Resolution form
+    let isSaving = false;
     document.getElementById('resolution-form').addEventListener('submit', async (e) => {
       e.preventDefault();
+      if (isSaving) return; // Prevent double submission
 
       try {
         const title = document.getElementById('title').value.trim();
@@ -999,10 +1012,15 @@
           }
         }
 
+        isSaving = true;
+        document.getElementById('submit-btn').disabled = true;
         await saveResolution(title, description, editId);
       } catch (error) {
         console.error('Form submission error:', error);
         alert('Error: ' + error.message);
+      } finally {
+        isSaving = false;
+        document.getElementById('submit-btn').disabled = false;
       }
     });
 
@@ -1032,18 +1050,21 @@
 
     // Update closeAIModal to allow saving original
     window.closeAIModal = async () => {
+      if (isSaving) return;
       document.getElementById('ai-modal').classList.add('hidden');
       if (aiSuggestions) {
         // User chose to keep original, save it now
         const title = document.getElementById('title').value.trim();
         const description = document.getElementById('description').value.trim();
+        isSaving = true;
         await saveResolution(title, description, '');
+        isSaving = false;
       }
       aiSuggestions = null;
     };
 
     window.acceptAISuggestions = async () => {
-      if (!aiSuggestions) return;
+      if (!aiSuggestions || isSaving) return;
       const title = aiSuggestions.improvedGoal;
       const description = aiSuggestions.improvedDescription || document.getElementById('description').value.trim();
       document.getElementById('title').value = title;
@@ -1056,7 +1077,9 @@
       }));
       document.getElementById('ai-modal').classList.add('hidden');
       // Save with suggestions
+      isSaving = true;
       await saveResolution(title, description, '');
+      isSaving = false;
       aiSuggestions = null;
     };
 
