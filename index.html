@@ -333,66 +333,89 @@
     .progress-container { margin-top: 1.25rem; }
     .progress-header { display: flex; justify-content: space-between; margin-bottom: 0.6rem; font-size: 0.85rem; color: #6b7280; font-weight: 500; }
     .progress-header span:last-child { font-weight: 700; color: #6366f1; font-size: 1rem; }
+
+    /* Progress bar for non-owners (read-only view) */
     .progress-bar {
-      height: 14px;
-      background: #f3f4f6;
+      height: 12px;
+      background: #e5e7eb;
       border-radius: 10px;
-      overflow: visible;
+      overflow: hidden;
       position: relative;
-      box-shadow: inset 0 2px 4px rgba(0,0,0,0.06);
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.08);
     }
     .progress-fill {
       height: 100%;
       background: linear-gradient(90deg, #6366f1 0%, #8b5cf6 50%, #a855f7 100%);
       border-radius: 10px;
-      transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-      box-shadow: 0 2px 8px rgba(99,102,241,0.4);
-      position: relative;
+      transition: width 0.3s ease;
     }
-    .progress-fill::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 50%;
-      transform: translateY(-50%);
-      width: 20px;
-      height: 20px;
-      background: white;
-      border: 3px solid #6366f1;
-      border-radius: 50%;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-    }
+
+    /* Progress slider for owners (interactive) - this IS the progress bar */
     .progress-slider {
       width: 100%;
-      margin-top: 0.75rem;
       cursor: pointer;
       -webkit-appearance: none;
       appearance: none;
-      height: 8px;
+      height: 12px;
       background: #e5e7eb;
-      border-radius: 4px;
+      border-radius: 10px;
       outline: none;
+      position: relative;
+    }
+    .progress-slider::-webkit-slider-runnable-track {
+      height: 12px;
+      border-radius: 10px;
     }
     .progress-slider::-webkit-slider-thumb {
       -webkit-appearance: none;
       appearance: none;
-      width: 22px;
-      height: 22px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      width: 24px;
+      height: 24px;
+      background: white;
+      border: 3px solid #6366f1;
       border-radius: 50%;
-      cursor: pointer;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.4);
-      transition: transform 0.2s;
+      cursor: grab;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+      transition: transform 0.15s, box-shadow 0.15s;
+      margin-top: -6px;
     }
-    .progress-slider::-webkit-slider-thumb:hover { transform: scale(1.15); }
+    .progress-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.1);
+      box-shadow: 0 4px 12px rgba(99,102,241,0.4);
+    }
+    .progress-slider::-webkit-slider-thumb:active {
+      cursor: grabbing;
+      transform: scale(1.05);
+    }
     .progress-slider::-moz-range-thumb {
-      width: 22px;
-      height: 22px;
-      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      width: 24px;
+      height: 24px;
+      background: white;
+      border: 3px solid #6366f1;
       border-radius: 50%;
-      cursor: pointer;
-      border: none;
-      box-shadow: 0 2px 8px rgba(99,102,241,0.4);
+      cursor: grab;
+      box-shadow: 0 2px 8px rgba(99,102,241,0.3);
+    }
+    .progress-slider::-moz-range-track {
+      height: 12px;
+      background: transparent;
+      border-radius: 10px;
+    }
+
+    /* Slider container for milestone overlay */
+    .slider-container {
+      position: relative;
+    }
+    .slider-container .milestone-markers {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      height: 12px;
+      pointer-events: none;
+    }
+    .slider-container .milestone-marker {
+      pointer-events: auto;
     }
 
     /* Milestone markers on progress bar */
@@ -1417,18 +1440,19 @@
       const sliderInput = isOwner ? `
         oninput="
           const card = this.closest('.resolution-card');
-          card.querySelector('.progress-fill').style.width = this.value + '%';
-          card.querySelector('.progress-header span:last-child').textContent = this.value + '%';
+          const val = this.value;
+          this.style.background = 'linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ' + val + '%, #e5e7eb ' + val + '%, #e5e7eb 100%)';
+          card.querySelector('.progress-header span:last-child').textContent = val + '%';
           card.querySelectorAll('.milestone-marker').forEach((m, i) => {
             const percent = parseInt(m.style.left);
-            m.classList.toggle('completed', parseInt(this.value) >= percent);
+            m.classList.toggle('completed', parseInt(val) >= percent);
           });
           card.querySelectorAll('.milestone-badge').forEach(b => {
             const match = b.textContent.match(/(\\d+)%/);
             if (match) {
               const percent = parseInt(match[1]);
-              b.classList.toggle('completed', parseInt(this.value) >= percent);
-              b.innerHTML = b.innerHTML.replace(/^[✓○]/, parseInt(this.value) >= percent ? '✓' : '○');
+              b.classList.toggle('completed', parseInt(val) >= percent);
+              b.innerHTML = b.innerHTML.replace(/^[✓○]/, parseInt(val) >= percent ? '✓' : '○');
             }
           });
         "
@@ -1448,16 +1472,25 @@
           ${res.description ? `<div class="resolution-description">${escapeHtml(res.description)}</div>` : ''}
           <div class="progress-container">
             <div class="progress-header"><span>Progress</span><span>${res.progress}%</span></div>
-            <div class="progress-bar">
-              <div class="progress-fill" style="width: ${res.progress}%"></div>
-              <div class="milestone-markers">
-                ${milestones.map(m => {
-                  const clickHandler = isOwner ? `onclick="window.snapToMilestone('${res.id}', ${m.targetPercent})"` : '';
-                  return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" ${clickHandler} title="${m.title} (${m.targetPercent}%)"></div>`;
-                }).join('')}
+            ${isOwner ? `
+              <div class="slider-container">
+                <input type="range" class="progress-slider" min="0" max="100" value="${res.progress}" ${sliderInput} onchange="window.updateProgress('${res.id}', this.value)" style="background: linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${res.progress}%, #e5e7eb ${res.progress}%, #e5e7eb 100%);">
+                <div class="milestone-markers">
+                  ${milestones.map(m => {
+                    return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" onclick="window.snapToMilestone('${res.id}', ${m.targetPercent})" title="${m.title} (${m.targetPercent}%)"></div>`;
+                  }).join('')}
+                </div>
               </div>
-            </div>
-            ${isOwner ? `<input type="range" class="progress-slider" min="0" max="100" value="${res.progress}" ${sliderInput} onchange="window.updateProgress('${res.id}', this.value)">` : ''}
+            ` : `
+              <div class="progress-bar">
+                <div class="progress-fill" style="width: ${res.progress}%"></div>
+                <div class="milestone-markers">
+                  ${milestones.map(m => {
+                    return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" title="${m.title} (${m.targetPercent}%)"></div>`;
+                  }).join('')}
+                </div>
+              </div>
+            `}
           </div>
           ${milestonesHtml}
           ${isOwner ? `<div class="share-section"><button class="btn-share" onclick="window.shareResolution('${res.id}')">🔗 Copy Link</button></div>` : ''}
@@ -2014,11 +2047,25 @@
       const slider = document.querySelector(`.resolution-card[data-id="${resId}"] .progress-slider`);
       if (slider) {
         slider.value = targetPercent;
-        // Update visual immediately
-        const progressFill = document.querySelector(`.resolution-card[data-id="${resId}"] .progress-fill`);
+        // Update slider background gradient
+        slider.style.background = `linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${targetPercent}%, #e5e7eb ${targetPercent}%, #e5e7eb 100%)`;
+        // Update percentage display
         const progressPercent = document.querySelector(`.resolution-card[data-id="${resId}"] .progress-header span:last-child`);
-        if (progressFill) progressFill.style.width = targetPercent + '%';
         if (progressPercent) progressPercent.textContent = targetPercent + '%';
+        // Update milestone markers
+        document.querySelectorAll(`.resolution-card[data-id="${resId}"] .milestone-marker`).forEach(m => {
+          const percent = parseInt(m.style.left);
+          m.classList.toggle('completed', targetPercent >= percent);
+        });
+        // Update milestone badges
+        document.querySelectorAll(`.resolution-card[data-id="${resId}"] .milestone-badge`).forEach(b => {
+          const match = b.textContent.match(/(\d+)%/);
+          if (match) {
+            const percent = parseInt(match[1]);
+            b.classList.toggle('completed', targetPercent >= percent);
+            b.innerHTML = b.innerHTML.replace(/^[✓○]/, targetPercent >= percent ? '✓' : '○');
+          }
+        });
       }
       await window.updateProgress(resId, targetPercent);
     };
