@@ -153,6 +153,70 @@
     .btn-add-milestone { background: #f3f4f6; color: #6366f1; border: none; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600; transition: all 0.2s; }
     .btn-add-milestone:hover { background: #e5e7eb; }
 
+    /* Floating Action Button */
+    .fab-container {
+      position: fixed;
+      bottom: 2rem;
+      right: 2rem;
+      z-index: 100;
+    }
+    .fab {
+      width: 60px;
+      height: 60px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      color: white;
+      border: none;
+      font-size: 2rem;
+      cursor: pointer;
+      box-shadow: 0 4px 20px rgba(99, 102, 241, 0.4);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+    }
+    .fab:hover {
+      transform: scale(1.1) rotate(90deg);
+      box-shadow: 0 6px 30px rgba(99, 102, 241, 0.5);
+    }
+    .fab:active {
+      transform: scale(0.95);
+    }
+    .fab-tooltip {
+      position: absolute;
+      right: 70px;
+      top: 50%;
+      transform: translateY(-50%);
+      background: #1f2937;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      white-space: nowrap;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s ease;
+    }
+    .fab-tooltip::after {
+      content: '';
+      position: absolute;
+      right: -6px;
+      top: 50%;
+      transform: translateY(-50%);
+      border-left: 6px solid #1f2937;
+      border-top: 6px solid transparent;
+      border-bottom: 6px solid transparent;
+    }
+    .fab:hover + .fab-tooltip {
+      opacity: 1;
+    }
+    @media (max-width: 480px) {
+      .fab-container { bottom: 1.5rem; right: 1.5rem; }
+      .fab { width: 56px; height: 56px; font-size: 1.75rem; }
+      .fab-tooltip { display: none; }
+    }
+
     /* AI Suggestions Modal */
     .modal-overlay {
       position: fixed;
@@ -732,6 +796,12 @@
     </div>
   </div>
 
+  <!-- Floating Action Button -->
+  <div class="fab-container hidden" id="fab-container">
+    <button class="fab" id="fab-add" title="Add Resolution">+</button>
+    <span class="fab-tooltip">Add Resolution</span>
+  </div>
+
   <script type="module">
     import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js';
     import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider, signOut, updateProfile } from 'https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js';
@@ -786,6 +856,7 @@
         document.querySelector('.user-header').classList.remove('hidden');
         document.getElementById('guest-header').classList.add('hidden');
         document.querySelector('.stats').classList.remove('hidden');
+        document.getElementById('fab-container').classList.remove('hidden');
         updateUserUI();
         subscribeToResolutions();
         await ensureUserDocument();
@@ -813,6 +884,7 @@
         document.getElementById('guest-header').classList.remove('hidden');
         document.getElementById('follow-requests-section').classList.add('hidden');
         document.querySelector('.stats').classList.add('hidden');
+        document.getElementById('fab-container').classList.add('hidden');
         // Default to feed view for non-logged in users
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
         document.querySelector('.nav-tab[data-view="feed"]').classList.add('active');
@@ -1578,6 +1650,18 @@
     document.getElementById('google-signup').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); } catch (err) { showAuthMessage(err.message); } });
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
     document.getElementById('share-profile').addEventListener('click', () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Profile link copied!'); });
+
+    // Floating Action Button - scroll to add form
+    document.getElementById('fab-add').addEventListener('click', () => {
+      // Switch to resolutions view if not already there
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.nav-tab[data-view="resolutions"]').classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById('resolutions-view').classList.remove('hidden');
+      // Scroll to and focus the form
+      document.querySelector('.add-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => document.getElementById('title').focus(), 400);
+    });
 
     const ANALYZE_GOAL_URL = 'https://analyze-goal.leena-ray.workers.dev';
 
