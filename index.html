@@ -780,6 +780,11 @@
       const isFollowing = currentUser && followingUsers.has(activity.userId);
       const showRealIdentity = isOwner || isFollowing;
 
+      // For logged-out users: show resolution details but anonymize the person
+      // For logged-in non-followers: hide both identity and details (encourage following)
+      const isLoggedOut = !currentUser;
+      const showResolutionDetails = showRealIdentity || isLoggedOut;
+
       // Use real or anonymous data based on follow status
       const displayName = showRealIdentity ? activity.userDisplayName : 'A community member';
       const displayNameClass = showRealIdentity ? '' : 'anonymous-name';
@@ -787,15 +792,15 @@
       let text = '';
       let extraContent = '';
       switch (activity.type) {
-        case 'new_resolution': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> added a new resolution${showRealIdentity ? `: "${escapeHtml(activity.resolutionTitle)}"` : ''}`; break;
-        case 'progress_update': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> updated progress${showRealIdentity ? ` on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%` : ''}`; break;
+        case 'new_resolution': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> added a new resolution${showResolutionDetails ? `: "${escapeHtml(activity.resolutionTitle)}"` : ''}`; break;
+        case 'progress_update': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> updated progress${showResolutionDetails ? ` on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%` : ''}`; break;
         case 'comment':
-          text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> commented${showRealIdentity ? ` on "${escapeHtml(activity.resolutionTitle)}"` : ''}`;
-          if (showRealIdentity && activity.data?.commentText) {
+          text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> commented${showResolutionDetails ? ` on "${escapeHtml(activity.resolutionTitle)}"` : ''}`;
+          if (showResolutionDetails && activity.data?.commentText) {
             extraContent = `<div class="activity-comment">"${escapeHtml(activity.data.commentText)}"</div>`;
           }
           break;
-        case 'completion': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> completed a goal${showRealIdentity ? `: "${escapeHtml(activity.resolutionTitle)}" 🎉` : ' 🎉'}`; break;
+        case 'completion': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> completed a goal${showResolutionDetails ? `: "${escapeHtml(activity.resolutionTitle)}" 🎉` : ' 🎉'}`; break;
       }
 
       // Anonymous avatar for non-followed users
@@ -817,7 +822,7 @@
         if (pendingRequests.has(activity.userId)) {
           followBtn = `<button class="btn-follow pending" disabled>Requested</button>`;
         } else {
-          followBtn = `<button class="btn-follow" onclick="requestFollow('${activity.userId}')">Follow to see details</button>`;
+          followBtn = `<button class="btn-follow" onclick="requestFollow('${activity.userId}')">Follow to see who</button>`;
         }
       }
 
@@ -902,6 +907,17 @@
 
       if (users.length === 0) {
         container.innerHTML = '<div class="empty-state"><h2>No users yet</h2></div>';
+        return;
+      }
+
+      // For logged-out users, just show the member count
+      if (!currentUser) {
+        container.innerHTML = `
+          <div class="empty-state">
+            <h2>${users.length} Community Member${users.length !== 1 ? 's' : ''}</h2>
+            <p>Sign in to see who's working on their resolutions and follow them!</p>
+          </div>
+        `;
         return;
       }
 
