@@ -116,10 +116,46 @@
     .divider::after { right: 0; }
 
     /* User Header */
-    .user-header { background: rgba(255,255,255,0.12); backdrop-filter: blur(10px); padding: 1rem 1.25rem; border-radius: 16px; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; color: white; }
+    .user-header {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+      backdrop-filter: blur(10px);
+      padding: 0.75rem 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      z-index: 200;
+      box-shadow: 0 2px 20px rgba(0,0,0,0.15);
+    }
+    .user-header.guest-header {
+      background: rgba(255,255,255,0.95);
+      color: #374151;
+    }
+    .header-spacer { height: 70px; }
     .user-info { display: flex; align-items: center; gap: 0.75rem; }
-    .user-avatar { width: 42px; height: 42px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #6366f1; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+    .user-avatar { width: 38px; height: 38px; border-radius: 50%; background: white; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #6366f1; overflow: hidden; box-shadow: 0 2px 8px rgba(0,0,0,0.15); font-size: 0.9rem; }
     .user-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .user-header .user-name { font-weight: 600; font-size: 0.95rem; }
+    .header-actions { display: flex; align-items: center; gap: 0.5rem; }
+    .btn-add-resolution {
+      background: white;
+      color: #6366f1;
+      border: none;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s;
+    }
+    .btn-add-resolution:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
     .btn-logout { background: rgba(255,255,255,0.15); padding: 0.5rem 1rem; border: none; border-radius: 8px; color: white; cursor: pointer; font-size: 0.875rem; font-weight: 500; transition: all 0.2s; }
     .btn-logout:hover { background: rgba(255,255,255,0.25); }
 
@@ -149,6 +185,39 @@
     .btn-remove-milestone:hover { background: #fecaca; }
     .btn-add-milestone { background: #f3f4f6; color: #6366f1; border: none; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; font-size: 0.85rem; margin-top: 0.5rem; font-weight: 600; transition: all 0.2s; }
     .btn-add-milestone:hover { background: #e5e7eb; }
+
+    /* Share to Feed checkbox */
+    .share-to-feed-option {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #f0f9ff;
+      border-radius: 10px;
+      border: 1px solid #bae6fd;
+    }
+    .checkbox-label {
+      display: flex;
+      align-items: flex-start;
+      gap: 0.75rem;
+      cursor: pointer;
+    }
+    .checkbox-label input[type="checkbox"] {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      accent-color: #6366f1;
+      cursor: pointer;
+    }
+    .checkbox-text {
+      font-weight: 600;
+      color: #1e40af;
+      font-size: 0.95rem;
+    }
+    .checkbox-hint {
+      display: block;
+      font-size: 0.8rem;
+      color: #64748b;
+      margin-top: 0.15rem;
+    }
 
     /* Floating Action Button */
     .fab-container {
@@ -718,13 +787,14 @@
 
     <!-- Main App -->
     <div id="app-container" class="hidden">
-      <div class="user-header">
+      <!-- Frozen Header Bar -->
+      <div class="user-header" id="main-header">
         <div class="user-info">
           <div class="user-avatar" id="user-avatar">?</div>
-          <div><div id="user-name">User</div><small id="user-email" style="opacity: 0.8;"></small></div>
+          <div id="user-name" class="user-name">User</div>
         </div>
-        <div>
-          <button class="btn-share" id="share-profile" style="margin-right: 0.5rem;">Share</button>
+        <div class="header-actions">
+          <button class="btn-add-resolution" id="header-add-btn">✨ Add Resolution</button>
           <button class="btn-logout" id="logout-btn">Log Out</button>
         </div>
       </div>
@@ -732,10 +802,13 @@
       <!-- Guest Header (shown when not logged in) -->
       <div class="user-header guest-header hidden" id="guest-header">
         <div class="user-info">
-          <div>👋 Welcome! Browse resolutions or sign in to create your own.</div>
+          <span>👋 Welcome! Browse or sign in to create.</span>
         </div>
         <button class="btn btn-small" id="guest-signin-btn">Sign In</button>
       </div>
+
+      <!-- Spacer for fixed header -->
+      <div class="header-spacer" id="header-spacer"></div>
 
       <!-- Follow Requests Section (shown when user has pending requests) -->
       <div class="follow-requests hidden" id="follow-requests-section">
@@ -767,6 +840,13 @@
               <h4>Milestones (optional)</h4>
               <div class="milestone-inputs" id="milestone-inputs"></div>
               <button type="button" class="btn-add-milestone" id="add-milestone-btn">+ Add Milestone</button>
+            </div>
+            <div class="share-to-feed-option">
+              <label class="checkbox-label">
+                <input type="checkbox" id="share-to-feed" checked>
+                <span class="checkbox-text">📢 Share to activity feed</span>
+                <span class="checkbox-hint">Let others see your new resolution</span>
+              </label>
             </div>
             <div class="form-actions" style="margin-top: 1rem;">
               <button type="submit" class="btn" id="submit-btn">Add Resolution</button>
@@ -873,8 +953,9 @@
         profileContainer.classList.add('hidden');
         document.querySelector('.nav-tabs').classList.remove('hidden');
         document.querySelector('.add-form').classList.remove('hidden');
-        document.querySelector('.user-header').classList.remove('hidden');
+        document.getElementById('main-header').classList.remove('hidden');
         document.getElementById('guest-header').classList.add('hidden');
+        document.getElementById('header-spacer').classList.remove('hidden');
         document.querySelector('.stats').classList.remove('hidden');
         document.getElementById('fab-container').classList.remove('hidden');
         updateUserUI();
@@ -900,8 +981,9 @@
             <p>Sign in to create resolutions and track your progress!</p>
           </div>
         `;
-        document.querySelector('.user-header').classList.add('hidden');
+        document.getElementById('main-header').classList.add('hidden');
         document.getElementById('guest-header').classList.remove('hidden');
+        document.getElementById('header-spacer').classList.remove('hidden');
         document.getElementById('follow-requests-section').classList.add('hidden');
         document.querySelector('.stats').classList.add('hidden');
         document.getElementById('fab-container').classList.add('hidden');
@@ -1093,7 +1175,6 @@
     function updateUserUI() {
       const name = currentUser.displayName || currentUser.email.split('@')[0];
       document.getElementById('user-name').textContent = name;
-      document.getElementById('user-email').textContent = currentUser.email;
       const avatarEl = document.getElementById('user-avatar');
       if (currentUser.photoURL) {
         avatarEl.innerHTML = `<img src="${currentUser.photoURL}" alt="${name}">`;
@@ -1679,7 +1760,18 @@
     document.getElementById('google-login').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); } catch (err) { showAuthMessage(err.message); } });
     document.getElementById('google-signup').addEventListener('click', async () => { try { await signInWithPopup(auth, googleProvider); } catch (err) { showAuthMessage(err.message); } });
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
-    document.getElementById('share-profile').addEventListener('click', () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Profile link copied!'); });
+
+    // Header "Add Resolution" button - scroll to form
+    document.getElementById('header-add-btn').addEventListener('click', () => {
+      // Switch to resolutions view if not already there
+      document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+      document.querySelector('.nav-tab[data-view="resolutions"]').classList.add('active');
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+      document.getElementById('resolutions-view').classList.remove('hidden');
+      // Scroll to and focus the form
+      document.querySelector('.add-form').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setTimeout(() => document.getElementById('title').focus(), 400);
+    });
 
     // Floating Action Button - scroll to add form
     document.getElementById('fab-add').addEventListener('click', () => {
@@ -1873,6 +1965,7 @@
         const title = document.getElementById('title').value.trim();
         const description = document.getElementById('description').value.trim();
         const editId = document.getElementById('edit-id').value;
+        const shareToFeed = document.getElementById('share-to-feed').checked;
 
         // For new resolutions without milestones, offer SMART analysis
         if (!editId && editingMilestones.length === 0) {
@@ -1880,6 +1973,7 @@
           const analysis = await analyzeGoal(title, description);
           if (analysis) {
             aiSuggestions = analysis;
+            aiSuggestions._shareToFeed = shareToFeed; // Store for later
             renderAISuggestions(analysis);
             return; // Wait for user to accept or skip
           }
@@ -1887,7 +1981,7 @@
 
         isSaving = true;
         document.getElementById('submit-btn').disabled = true;
-        await saveResolution(title, description, editId);
+        await saveResolution(title, description, editId, shareToFeed);
       } catch (error) {
         console.error('Form submission error:', error);
         alert('Error: ' + error.message);
@@ -1897,7 +1991,7 @@
       }
     });
 
-    async function saveResolution(title, description, editId) {
+    async function saveResolution(title, description, editId, shareToFeed = true) {
       const milestones = editingMilestones.filter(m => m.title.trim()).map(m => ({
         id: m.id,
         title: m.title.trim(),
@@ -1916,7 +2010,9 @@
           title, description, progress: 0, isPublic: true, milestones,
           createdAt: serverTimestamp(), completedAt: null
         });
-        await logActivity('new_resolution', { id: docRef.id, title });
+        if (shareToFeed) {
+          await logActivity('new_resolution', { id: docRef.id, title });
+        }
         resetForm();
       }
     }
@@ -1929,8 +2025,9 @@
         // User chose to keep original, save it now
         const title = document.getElementById('title').value.trim();
         const description = document.getElementById('description').value.trim();
+        const shareToFeed = aiSuggestions._shareToFeed !== false;
         isSaving = true;
-        await saveResolution(title, description, '');
+        await saveResolution(title, description, '', shareToFeed);
         isSaving = false;
       }
       aiSuggestions = null;
@@ -1940,6 +2037,7 @@
       if (!aiSuggestions || isSaving) return;
       const title = aiSuggestions.improvedGoal;
       const description = aiSuggestions.improvedDescription || document.getElementById('description').value.trim();
+      const shareToFeed = aiSuggestions._shareToFeed !== false;
       document.getElementById('title').value = title;
       document.getElementById('description').value = description;
       editingMilestones = aiSuggestions.suggestedMilestones.map((m, i) => ({
@@ -1951,7 +2049,7 @@
       document.getElementById('ai-modal').classList.add('hidden');
       // Save with suggestions
       isSaving = true;
-      await saveResolution(title, description, '');
+      await saveResolution(title, description, '', shareToFeed);
       isSaving = false;
       aiSuggestions = null;
     };
