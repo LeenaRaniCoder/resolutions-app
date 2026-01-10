@@ -30,7 +30,10 @@ export default async (request, context) => {
       });
     }
 
-    const OPENAI_API_KEY = Netlify.env.get('OPENAI_API_KEY');
+    const OPENAI_API_KEY = process.env.OPENAI_API_KEY || Netlify.env.get('OPENAI_API_KEY');
+
+    // Debug: log key prefix to verify it's being read
+    console.log('API key prefix:', OPENAI_API_KEY ? OPENAI_API_KEY.substring(0, 10) + '...' : 'NOT SET');
 
     if (!OPENAI_API_KEY) {
       return new Response(JSON.stringify({ error: 'API key not configured' }), {
