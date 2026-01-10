@@ -390,11 +390,11 @@
       <div class="resolutions-list" id="profile-resolutions-list"></div>
     </div>
 
-    <!-- SMART Goal Coach Modal -->
+    <!-- AI Goal Coach Modal -->
     <div id="ai-modal" class="modal-overlay hidden">
       <div class="modal">
         <div class="modal-header">
-          <h3>🎯 SMART Goal Coach</h3>
+          <h3>🤖 AI Goal Coach</h3>
           <button class="modal-close" onclick="closeAIModal()">×</button>
         </div>
         <div class="modal-body" id="ai-modal-body">
@@ -882,8 +882,30 @@
     document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
     document.getElementById('share-profile').addEventListener('click', () => { navigator.clipboard.writeText(`${location.origin}${location.pathname}?user=${currentUser.uid}`); alert('Profile link copied!'); });
 
-    // Heuristic-based Goal Analysis (no API required)
-    function analyzeGoal(title, description) {
+    const ANALYZE_GOAL_URL = 'https://analyze-goal.leena-ray.workers.dev';
+
+    // AI-powered Goal Analysis using Claude
+    async function analyzeGoal(title, description) {
+      try {
+        const response = await fetch(ANALYZE_GOAL_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ title, description })
+        });
+        const data = await response.json();
+        if (!response.ok || data.error) {
+          throw new Error(data.error || 'Analysis failed');
+        }
+        return data;
+      } catch (error) {
+        console.error('AI analysis error:', error);
+        // Fall back to heuristic analysis
+        return analyzeGoalHeuristic(title, description);
+      }
+    }
+
+    // Heuristic-based fallback analysis
+    function analyzeGoalHeuristic(title, description) {
       const text = (title + ' ' + (description || '')).toLowerCase();
       const currentYear = new Date().getFullYear();
 
@@ -985,7 +1007,7 @@
       document.getElementById('ai-modal-body').innerHTML = `
         <div class="ai-loading">
           <div class="spinner"></div>
-          <p>Checking your goal...</p>
+          <p>AI is analyzing your goal...</p>
         </div>
       `;
     }
@@ -1044,7 +1066,7 @@
         // For new resolutions without milestones, offer SMART analysis
         if (!editId && editingMilestones.length === 0) {
           showAIModal();
-          const analysis = analyzeGoal(title, description);
+          const analysis = await analyzeGoal(title, description);
           if (analysis) {
             aiSuggestions = analysis;
             renderAISuggestions(analysis);
