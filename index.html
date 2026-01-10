@@ -1340,6 +1340,17 @@
       const icons = { new_resolution: '🎯', progress_update: '📈', comment: '💬', completion: '🎉' };
       const icon = icons[activity.type] || '📌';
 
+      // Category badge for feed
+      const categoryLabels = {
+        health: '🏃 Health',
+        money_career: '💼 Career',
+        family_life_balance: '👨‍👩‍👧 Balance',
+        learning: '📚 Learning',
+        other: '🎯 Goal'
+      };
+      const category = activity.resolutionCategory || 'other';
+      const categoryBadge = `<span class="category-badge ${category}" style="margin-left: 0.5rem; vertical-align: middle;">${categoryLabels[category] || '🎯 Goal'}</span>`;
+
       // Determine if we should show real identity
       // Show real identity if: it's the current user's own activity OR they follow this user
       const isOwner = currentUser && activity.userId === currentUser.uid;
@@ -1358,15 +1369,15 @@
       let text = '';
       let extraContent = '';
       switch (activity.type) {
-        case 'new_resolution': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> added a new resolution${showResolutionDetails ? `: "${escapeHtml(activity.resolutionTitle)}"` : ''}`; break;
-        case 'progress_update': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> updated progress${showResolutionDetails ? ` on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%` : ''}`; break;
+        case 'new_resolution': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> added a new resolution${showResolutionDetails ? `: "${escapeHtml(activity.resolutionTitle)}"` : ''}${showResolutionDetails ? categoryBadge : ''}`; break;
+        case 'progress_update': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> updated progress${showResolutionDetails ? ` on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%` : ''}${showResolutionDetails ? categoryBadge : ''}`; break;
         case 'comment':
-          text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> commented${showResolutionDetails ? ` on "${escapeHtml(activity.resolutionTitle)}"` : ''}`;
+          text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> commented${showResolutionDetails ? ` on "${escapeHtml(activity.resolutionTitle)}"` : ''}${showResolutionDetails ? categoryBadge : ''}`;
           if (showResolutionDetails && activity.data?.commentText) {
             extraContent = `<div class="activity-comment">"${escapeHtml(activity.data.commentText)}"</div>`;
           }
           break;
-        case 'completion': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> completed a goal${showResolutionDetails ? `: "${escapeHtml(activity.resolutionTitle)}" 🎉` : ' 🎉'}`; break;
+        case 'completion': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> completed a goal${showResolutionDetails ? `: "${escapeHtml(activity.resolutionTitle)}" 🎉` : ' 🎉'}${showResolutionDetails ? categoryBadge : ''}`; break;
       }
 
       // Anonymous avatar for non-followed users
@@ -1450,10 +1461,10 @@
           createdAt: serverTimestamp()
         });
 
-        // Get resolution title for activity log
+        // Get resolution title and category for activity log
         const resDoc = await getDoc(doc(db, 'resolutions', resolutionId));
-        const resTitle = resDoc.exists() ? resDoc.data().title : 'a resolution';
-        await logActivity('comment', { id: resolutionId, title: resTitle }, { commentText: text });
+        const resData = resDoc.exists() ? resDoc.data() : {};
+        await logActivity('comment', { id: resolutionId, title: resData.title || 'a resolution', category: resData.category }, { commentText: text });
 
         input.value = '';
         document.getElementById(`activity-comment-${activityId}`).classList.add('hidden');
@@ -1563,6 +1574,7 @@
           userPhotoURL: currentUser.photoURL || null,
           resolutionId: resolution.id || '',
           resolutionTitle: resolution.title || '',
+          resolutionCategory: resolution.category || 'other',
           data,
           createdAt: serverTimestamp()
         });
@@ -2357,7 +2369,7 @@
           createdAt: serverTimestamp(), completedAt: null
         });
         if (shareToFeed) {
-          await logActivity('new_resolution', { id: docRef.id, title });
+          await logActivity('new_resolution', { id: docRef.id, title, category: detectedCategory });
         }
         resetForm();
       }
@@ -2491,13 +2503,13 @@
       // Mark complete if 100%
       if (newProgress === 100 && oldProgress !== 100) {
         updates.completedAt = serverTimestamp();
-        await logActivity('completion', { id, title: data.title });
+        await logActivity('completion', { id, title: data.title, category: data.category });
         showConfetti(); // Celebrate!
       } else if (newProgress < 100 && oldProgress === 100) {
         // Un-complete if dropped below 100%
         updates.completedAt = null;
       } else if (oldProgress !== newProgress) {
-        await logActivity('progress_update', { id, title: data.title }, { oldProgress, newProgress });
+        await logActivity('progress_update', { id, title: data.title, category: data.category }, { oldProgress, newProgress });
       }
 
       await updateDoc(docRef, updates);
