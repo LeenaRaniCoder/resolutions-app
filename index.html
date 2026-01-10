@@ -2590,13 +2590,15 @@
 
     // Admin function to migrate all existing resolutions to have AI-detected categories
     // Run this from browser console: migrateCategories()
-    window.migrateCategories = async () => {
+    // Pass true to force re-categorize everything: migrateCategories(true)
+    window.migrateCategories = async (forceAll = false) => {
       if (!currentUser) {
         console.error('Please sign in first');
         return;
       }
 
       console.log('🚀 Starting category migration...');
+      console.log(forceAll ? '⚠️ Force mode: re-categorizing ALL resolutions' : 'ℹ️ Skipping already-categorized resolutions');
 
       const resSnap = await getDocs(collection(db, 'resolutions'));
       const allResolutions = resSnap.docs.map(d => ({ id: d.id, ...d.data() }));
@@ -2608,8 +2610,8 @@
       let errors = 0;
 
       for (const res of allResolutions) {
-        // Skip if already has a valid category (not 'other')
-        if (res.category && res.category !== 'other') {
+        // Skip if already has a valid category (not 'other') unless forcing
+        if (!forceAll && res.category && res.category !== 'other') {
           console.log(`⏭️ Skipping "${res.title}" - already categorized as ${res.category}`);
           skipped++;
           continue;
@@ -2655,6 +2657,25 @@
       if (typeof loadCommunity === 'function') loadCommunity();
 
       return { updated, skipped, errors };
+    };
+
+    // Debug function to check current categories in database
+    window.checkCategories = async () => {
+      const resSnap = await getDocs(collection(db, 'resolutions'));
+      const resolutions = resSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      console.log('=== Current Resolution Categories ===');
+      const counts = {};
+      resolutions.forEach(res => {
+        const cat = res.category || '(none)';
+        counts[cat] = (counts[cat] || 0) + 1;
+        console.log(`"${res.title}" -> ${cat}`);
+      });
+      console.log('\n=== Summary ===');
+      Object.entries(counts).forEach(([cat, count]) => {
+        console.log(`${cat}: ${count}`);
+      });
+      return resolutions;
     };
 
   </script>
