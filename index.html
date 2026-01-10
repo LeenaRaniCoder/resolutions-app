@@ -629,13 +629,11 @@
         alert('Please sign in to delete activities');
         return;
       }
-      if (confirm('Delete this activity?')) {
-        try {
-          await deleteDoc(doc(db, 'activities', activityId));
-        } catch (error) {
-          console.error('Delete activity error:', error);
-          alert('Failed to delete: ' + error.message);
-        }
+      try {
+        await deleteDoc(doc(db, 'activities', activityId));
+      } catch (error) {
+        console.error('Delete activity error:', error);
+        alert('Failed to delete: ' + error.message);
       }
     };
 
