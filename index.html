@@ -624,10 +624,17 @@
 
     // Activity actions
     window.deleteActivity = async (activityId) => {
-      if (!currentUser) return;
+      console.log('deleteActivity called with:', activityId);
+      if (!currentUser) {
+        console.log('No current user');
+        alert('Please sign in to delete activities');
+        return;
+      }
       if (confirm('Delete this activity?')) {
         try {
+          console.log('Deleting activity:', activityId);
           await deleteDoc(doc(db, 'activities', activityId));
+          console.log('Activity deleted successfully');
         } catch (error) {
           console.error('Delete activity error:', error);
           alert('Failed to delete: ' + error.message);
