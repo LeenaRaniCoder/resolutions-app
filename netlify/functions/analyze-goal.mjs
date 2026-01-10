@@ -21,7 +21,7 @@ export default async (request, context) => {
   }
 
   try {
-    const { title, description } = await request.json();
+    const { title, description, refinementFeedback } = await request.json();
 
     if (!title) {
       return new Response(JSON.stringify({ error: 'Title is required' }), {
@@ -43,10 +43,21 @@ export default async (request, context) => {
     }
 
     const currentYear = new Date().getFullYear();
+    const refinementSection = refinementFeedback ? `
+
+USER FEEDBACK FOR REFINEMENT:
+The user has reviewed a previous analysis and wants the following changes:
+"${refinementFeedback}"
+
+Please incorporate this feedback into your response. Adjust the goal, milestones, or other suggestions based on what the user is asking for.
+` : '';
+
     const prompt = `You are an expert goal-setting coach specializing in behavioral psychology, habit formation, and strategic planning. Analyze this New Year's resolution and transform it into a comprehensive, actionable plan.
 
+IMPORTANT: The current year is ${currentYear}. ALL dates in your response MUST be in ${currentYear}. Do NOT use any other year.
+
 Resolution: "${title}"
-${description ? `Description: "${description}"` : ''}
+${description ? `Description: "${description}"` : ''}${refinementSection}
 
 First, detect the goal category (health, money/career, family/life_balance, learning, or other).
 
@@ -171,7 +182,8 @@ IMPORTANT GUIDELINES:
 - Leading indicators should be things within the person's control
 - Lagging indicators should be observable results
 - Risks should be realistic failure points, not generic obstacles
-- The identity statement should be present-tense and empowering`;
+- The identity statement should be present-tense and empowering
+- CRITICAL: All dates MUST use year ${currentYear} - use ${currentYear}-03-31, ${currentYear}-06-30, ${currentYear}-09-30, ${currentYear}-12-31`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',

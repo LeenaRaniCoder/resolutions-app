@@ -329,6 +329,29 @@
       gap: 0.5rem;
       justify-content: flex-end;
     }
+    .modal-refine {
+      padding: 0.75rem 1.5rem;
+      background: #f8fafc;
+      border-top: 1px solid #e5e7eb;
+    }
+    .refine-input-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+    .refine-input {
+      flex: 1;
+      padding: 0.6rem 1rem;
+      border: 2px solid #e5e7eb;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      transition: all 0.2s;
+    }
+    .refine-input:focus {
+      outline: none;
+      border-color: #6366f1;
+      box-shadow: 0 0 0 3px rgba(99,102,241,0.1);
+    }
+    .refine-input::placeholder { color: #9ca3af; }
     .ai-section { margin-bottom: 1.25rem; }
     .ai-section h4 { font-size: 0.9rem; color: #667eea; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
     .ai-section p { font-size: 0.95rem; color: #333; line-height: 1.5; }
@@ -907,6 +930,12 @@
           <div class="ai-loading">
             <div class="spinner"></div>
             <p>Analyzing your goal...</p>
+          </div>
+        </div>
+        <div class="modal-refine hidden" id="ai-modal-refine">
+          <div class="refine-input-group">
+            <input type="text" id="refine-input" placeholder="e.g., Make milestones more aggressive, focus on morning routines..." class="refine-input">
+            <button class="btn btn-small" onclick="refineAISuggestions()">🔄 Refine</button>
           </div>
         </div>
         <div class="modal-footer hidden" id="ai-modal-footer">
@@ -1809,12 +1838,12 @@
     const ANALYZE_GOAL_URL = 'https://analyze-goal.leena-ray.workers.dev';
 
     // AI-powered Goal Analysis using Claude
-    async function analyzeGoal(title, description) {
+    async function analyzeGoal(title, description, refinementFeedback = null) {
       try {
         const response = await fetch(ANALYZE_GOAL_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description })
+          body: JSON.stringify({ title, description, refinementFeedback })
         });
         const data = await response.json();
         if (!response.ok || data.error) {
@@ -1827,6 +1856,50 @@
         return analyzeGoalHeuristic(title, description);
       }
     }
+
+    // Refine AI suggestions with user feedback
+    window.refineAISuggestions = async () => {
+      const refinementInput = document.getElementById('refine-input');
+      const feedback = refinementInput.value.trim();
+      if (!feedback) {
+        refinementInput.focus();
+        return;
+      }
+
+      const title = document.getElementById('title').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      // Show loading state
+      document.getElementById('ai-modal-body').innerHTML = `
+        <div class="ai-loading">
+          <div class="spinner"></div>
+          <p>Refining suggestions based on your feedback...</p>
+        </div>
+      `;
+      document.getElementById('ai-modal-footer').classList.add('hidden');
+      document.getElementById('ai-modal-refine').classList.add('hidden');
+
+      try {
+        const analysis = await analyzeGoal(title, description, feedback);
+        if (analysis) {
+          const shareToFeed = aiSuggestions?._shareToFeed !== false;
+          aiSuggestions = analysis;
+          aiSuggestions._shareToFeed = shareToFeed;
+          renderAISuggestions(analysis);
+          refinementInput.value = ''; // Clear after success
+        }
+      } catch (error) {
+        console.error('Refinement error:', error);
+        document.getElementById('ai-modal-body').innerHTML = `
+          <div class="ai-section">
+            <p style="color: #dc2626;">⚠️ Refinement failed: ${error.message}</p>
+            <p>Please try again or accept the current suggestions.</p>
+          </div>
+        `;
+        document.getElementById('ai-modal-footer').classList.remove('hidden');
+        document.getElementById('ai-modal-refine').classList.remove('hidden');
+      }
+    };
 
     // Heuristic-based fallback analysis
     function analyzeGoalHeuristic(title, description) {
@@ -1928,6 +2001,8 @@
     function showAIModal() {
       document.getElementById('ai-modal').classList.remove('hidden');
       document.getElementById('ai-modal-footer').classList.add('hidden');
+      document.getElementById('ai-modal-refine').classList.add('hidden');
+      document.getElementById('refine-input').value = '';
       document.getElementById('ai-modal-body').innerHTML = `
         <div class="ai-loading">
           <div class="spinner"></div>
@@ -2094,6 +2169,7 @@
           </div>
         ` : ''}
       `;
+      document.getElementById('ai-modal-refine').classList.remove('hidden');
       document.getElementById('ai-modal-footer').classList.remove('hidden');
     }
 
