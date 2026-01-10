@@ -277,6 +277,27 @@
     .back-link { color: white; text-decoration: none; display: inline-flex; align-items: center; gap: 0.5rem; margin-bottom: 1rem; opacity: 0.8; }
     .back-link:hover { opacity: 1; }
 
+    /* Follow System */
+    .follow-requests { background: rgba(255,255,255,0.15); padding: 1rem 1.5rem; border-radius: 12px; margin-bottom: 1.5rem; }
+    .follow-requests h3 { color: white; font-size: 1rem; margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.5rem; }
+    .follow-requests-badge { background: #ff6b6b; color: white; padding: 0.15rem 0.5rem; border-radius: 10px; font-size: 0.75rem; }
+    .follow-request-item { background: white; padding: 0.75rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.75rem; margin-bottom: 0.5rem; }
+    .follow-request-avatar { width: 36px; height: 36px; border-radius: 50%; background: #667eea; color: white; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; overflow: hidden; }
+    .follow-request-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .follow-request-info { flex: 1; }
+    .follow-request-name { font-weight: 600; color: #333; font-size: 0.9rem; }
+    .follow-request-actions { display: flex; gap: 0.5rem; }
+    .btn-follow { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .btn-follow:hover { opacity: 0.9; }
+    .btn-follow.pending { background: #f0f0f0; color: #666; cursor: default; }
+    .btn-follow.following { background: #28a745; }
+    .btn-unfollow { background: #e0e0e0; color: #333; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .btn-approve { background: #28a745; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .btn-decline { background: #dc3545; color: white; border: none; padding: 0.4rem 0.8rem; border-radius: 6px; font-size: 0.8rem; cursor: pointer; }
+    .user-card-follow { margin-top: 0.75rem; }
+    .anonymous-avatar { background: #ccc !important; }
+    .anonymous-name { color: #999; font-style: italic; }
+
     /* Messages */
     .message { padding: 0.75rem; border-radius: 8px; margin-bottom: 1rem; font-size: 0.9rem; }
     .message.error { background: #fee; color: #c00; border: 1px solid #fcc; }
@@ -344,6 +365,12 @@
           <div>👋 Welcome! Browse resolutions or sign in to create your own.</div>
         </div>
         <button class="btn btn-small" id="guest-signin-btn">Sign In</button>
+      </div>
+
+      <!-- Follow Requests Section (shown when user has pending requests) -->
+      <div class="follow-requests hidden" id="follow-requests-section">
+        <h3>👋 Follow Requests <span class="follow-requests-badge" id="follow-requests-count">0</span></h3>
+        <div id="follow-requests-list"></div>
       </div>
 
       <!-- Navigation Tabs -->
@@ -442,8 +469,11 @@
     let resolutions = [];
     let unsubscribeResolutions = null;
     let unsubscribeActivities = null;
+    let unsubscribeFollowRequests = null;
     let editingMilestones = [];
     let aiSuggestions = null;
+    let followingUsers = new Set(); // Users that the current user follows
+    let pendingRequests = new Set(); // Pending follow requests sent by current user
 
     const loadingEl = document.getElementById('loading');
     const authContainer = document.getElementById('auth-container');
@@ -473,8 +503,13 @@
         updateUserUI();
         subscribeToResolutions();
         await ensureUserDocument();
+        await loadFollowingData();
+        subscribeToFollowRequests();
       } else {
         currentUser = null;
+        followingUsers.clear();
+        pendingRequests.clear();
+        if (unsubscribeFollowRequests) unsubscribeFollowRequests();
         // Show app but with limited access (feed and community only)
         authContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
@@ -484,6 +519,7 @@
         document.getElementById('resolutions-list').innerHTML = '<div class="empty-state"><h3>Sign in to add your resolutions</h3></div>';
         document.querySelector('.user-header').classList.add('hidden');
         document.getElementById('guest-header').classList.remove('hidden');
+        document.getElementById('follow-requests-section').classList.add('hidden');
         document.querySelector('.stats').classList.add('hidden');
         // Default to feed view for non-logged in users
         document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
@@ -514,6 +550,161 @@
         });
       }
     }
+
+    // Follow System Functions
+    async function loadFollowingData() {
+      if (!currentUser) return;
+
+      // Load users we are following
+      const followingSnap = await getDocs(query(
+        collection(db, 'follows'),
+        where('followerId', '==', currentUser.uid)
+      ));
+      followingUsers.clear();
+      followingSnap.docs.forEach(doc => followingUsers.add(doc.data().followingId));
+
+      // Load pending requests we've sent
+      const pendingSnap = await getDocs(query(
+        collection(db, 'followRequests'),
+        where('fromUserId', '==', currentUser.uid),
+        where('status', '==', 'pending')
+      ));
+      pendingRequests.clear();
+      pendingSnap.docs.forEach(doc => pendingRequests.add(doc.data().toUserId));
+    }
+
+    function subscribeToFollowRequests() {
+      if (!currentUser) return;
+
+      const q = query(
+        collection(db, 'followRequests'),
+        where('toUserId', '==', currentUser.uid),
+        where('status', '==', 'pending')
+      );
+
+      unsubscribeFollowRequests = onSnapshot(q, async (snapshot) => {
+        const requests = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const section = document.getElementById('follow-requests-section');
+        const list = document.getElementById('follow-requests-list');
+        const badge = document.getElementById('follow-requests-count');
+
+        if (requests.length === 0) {
+          section.classList.add('hidden');
+          return;
+        }
+
+        section.classList.remove('hidden');
+        badge.textContent = requests.length;
+
+        // Load user data for each request
+        const requestsHtml = await Promise.all(requests.map(async (req) => {
+          const userSnap = await getDoc(doc(db, 'users', req.fromUserId));
+          const userData = userSnap.exists() ? userSnap.data() : { displayName: 'Unknown User' };
+          const avatar = userData.photoURL
+            ? `<img src="${userData.photoURL}" alt="">`
+            : escapeHtml((userData.displayName || '?')[0].toUpperCase());
+
+          return `
+            <div class="follow-request-item" data-request-id="${req.id}">
+              <div class="follow-request-avatar">${avatar}</div>
+              <div class="follow-request-info">
+                <div class="follow-request-name">${escapeHtml(userData.displayName || 'Unknown User')}</div>
+              </div>
+              <div class="follow-request-actions">
+                <button class="btn-approve" onclick="approveFollowRequest('${req.id}', '${req.fromUserId}')">Accept</button>
+                <button class="btn-decline" onclick="declineFollowRequest('${req.id}')">Decline</button>
+              </div>
+            </div>
+          `;
+        }));
+
+        list.innerHTML = requestsHtml.join('');
+      });
+    }
+
+    window.requestFollow = async (userId) => {
+      if (!currentUser) {
+        alert('Please sign in to follow users');
+        return;
+      }
+      if (userId === currentUser.uid) return;
+
+      try {
+        // Check if already following or pending
+        if (followingUsers.has(userId) || pendingRequests.has(userId)) return;
+
+        await addDoc(collection(db, 'followRequests'), {
+          fromUserId: currentUser.uid,
+          fromUserName: currentUser.displayName || currentUser.email.split('@')[0],
+          fromUserPhoto: currentUser.photoURL || null,
+          toUserId: userId,
+          status: 'pending',
+          createdAt: serverTimestamp()
+        });
+
+        pendingRequests.add(userId);
+        loadCommunity(); // Refresh to show pending state
+      } catch (error) {
+        console.error('Follow request error:', error);
+        alert('Failed to send follow request: ' + error.message);
+      }
+    };
+
+    window.approveFollowRequest = async (requestId, fromUserId) => {
+      if (!currentUser) return;
+
+      try {
+        // Create the follow relationship
+        await addDoc(collection(db, 'follows'), {
+          followerId: fromUserId,
+          followingId: currentUser.uid,
+          createdAt: serverTimestamp()
+        });
+
+        // Update the request status
+        await updateDoc(doc(db, 'followRequests', requestId), {
+          status: 'approved'
+        });
+      } catch (error) {
+        console.error('Approve error:', error);
+        alert('Failed to approve: ' + error.message);
+      }
+    };
+
+    window.declineFollowRequest = async (requestId) => {
+      if (!currentUser) return;
+
+      try {
+        await updateDoc(doc(db, 'followRequests', requestId), {
+          status: 'declined'
+        });
+      } catch (error) {
+        console.error('Decline error:', error);
+        alert('Failed to decline: ' + error.message);
+      }
+    };
+
+    window.unfollowUser = async (userId) => {
+      if (!currentUser) return;
+
+      try {
+        // Find and delete the follow relationship
+        const followSnap = await getDocs(query(
+          collection(db, 'follows'),
+          where('followerId', '==', currentUser.uid),
+          where('followingId', '==', userId)
+        ));
+
+        const deletePromises = followSnap.docs.map(d => deleteDoc(d.ref));
+        await Promise.all(deletePromises);
+
+        followingUsers.delete(userId);
+        loadCommunity(); // Refresh
+      } catch (error) {
+        console.error('Unfollow error:', error);
+        alert('Failed to unfollow: ' + error.message);
+      }
+    };
 
     function updateUserUI() {
       const name = currentUser.displayName || currentUser.email.split('@')[0];
@@ -582,33 +773,62 @@
     function renderActivityCard(activity) {
       const icons = { new_resolution: '🎯', progress_update: '📈', comment: '💬', completion: '🎉' };
       const icon = icons[activity.type] || '📌';
+
+      // Determine if we should show real identity
+      // Show real identity if: it's the current user's own activity OR they follow this user
+      const isOwner = currentUser && activity.userId === currentUser.uid;
+      const isFollowing = currentUser && followingUsers.has(activity.userId);
+      const showRealIdentity = isOwner || isFollowing;
+
+      // Use real or anonymous data based on follow status
+      const displayName = showRealIdentity ? activity.userDisplayName : 'A community member';
+      const displayNameClass = showRealIdentity ? '' : 'anonymous-name';
+
       let text = '';
       let extraContent = '';
       switch (activity.type) {
-        case 'new_resolution': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> added a new resolution: "${escapeHtml(activity.resolutionTitle)}"`; break;
-        case 'progress_update': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> updated progress on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%`; break;
+        case 'new_resolution': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> added a new resolution${showRealIdentity ? `: "${escapeHtml(activity.resolutionTitle)}"` : ''}`; break;
+        case 'progress_update': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> updated progress${showRealIdentity ? ` on "${escapeHtml(activity.resolutionTitle)}" to ${activity.data?.newProgress || 0}%` : ''}`; break;
         case 'comment':
-          text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> commented on "${escapeHtml(activity.resolutionTitle)}"`;
-          if (activity.data?.commentText) {
+          text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> commented${showRealIdentity ? ` on "${escapeHtml(activity.resolutionTitle)}"` : ''}`;
+          if (showRealIdentity && activity.data?.commentText) {
             extraContent = `<div class="activity-comment">"${escapeHtml(activity.data.commentText)}"</div>`;
           }
           break;
-        case 'completion': text = `<strong>${escapeHtml(activity.userDisplayName)}</strong> completed "${escapeHtml(activity.resolutionTitle)}" 🎉`; break;
+        case 'completion': text = `<strong class="${displayNameClass}">${escapeHtml(displayName)}</strong> completed a goal${showRealIdentity ? `: "${escapeHtml(activity.resolutionTitle)}" 🎉` : ' 🎉'}`; break;
       }
-      const avatar = activity.userPhotoURL
-        ? `<img src="${activity.userPhotoURL}" alt="">`
-        : escapeHtml((activity.userDisplayName || '?')[0].toUpperCase());
 
-      const isOwner = currentUser && activity.userId === currentUser.uid;
-      const canComment = currentUser && activity.resolutionId && activity.type !== 'comment';
+      // Anonymous avatar for non-followed users
+      let avatar;
+      if (showRealIdentity) {
+        avatar = activity.userPhotoURL
+          ? `<img src="${activity.userPhotoURL}" alt="">`
+          : escapeHtml((activity.userDisplayName || '?')[0].toUpperCase());
+      } else {
+        avatar = '?';
+      }
+      const avatarClass = showRealIdentity ? '' : 'anonymous-avatar';
+
+      const canComment = currentUser && activity.resolutionId && activity.type !== 'comment' && showRealIdentity;
+
+      // Show follow button for logged in users who aren't following this person
+      let followBtn = '';
+      if (currentUser && !isOwner && !isFollowing) {
+        if (pendingRequests.has(activity.userId)) {
+          followBtn = `<button class="btn-follow pending" disabled>Requested</button>`;
+        } else {
+          followBtn = `<button class="btn-follow" onclick="requestFollow('${activity.userId}')">Follow to see details</button>`;
+        }
+      }
 
       return `
         <div class="activity-card" data-activity-id="${activity.id}" data-resolution-id="${activity.resolutionId || ''}">
-          <div class="activity-avatar">${avatar}</div>
+          <div class="activity-avatar ${avatarClass}">${avatar}</div>
           <div class="activity-content">
             <div class="activity-text">${text}</div>
             ${extraContent}
             <div class="activity-actions">
+              ${followBtn}
               ${canComment ? `<button class="activity-action-btn" onclick="showActivityComment('${activity.id}', '${activity.resolutionId}')">💬 Comment</button>` : ''}
               ${isOwner ? `<button class="activity-action-btn activity-delete-btn" onclick="deleteActivity('${activity.id}')"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6h14"/></svg> Delete</button>` : ''}
             </div>
@@ -696,11 +916,29 @@
       container.innerHTML = users.map(u => {
         const avatar = u.photoURL ? `<img src="${u.photoURL}" alt="">` : escapeHtml((u.displayName || '?')[0].toUpperCase());
         const count = userCounts[u.id] || 0;
+        const isCurrentUser = currentUser && currentUser.uid === u.id;
+        const isFollowing = followingUsers.has(u.id);
+        const isPending = pendingRequests.has(u.id);
+
+        let followBtn = '';
+        if (currentUser && !isCurrentUser) {
+          if (isFollowing) {
+            followBtn = `<button class="btn-unfollow" onclick="event.stopPropagation(); unfollowUser('${u.id}')">Unfollow</button>`;
+          } else if (isPending) {
+            followBtn = `<button class="btn-follow pending" onclick="event.stopPropagation();" disabled>Requested</button>`;
+          } else {
+            followBtn = `<button class="btn-follow" onclick="event.stopPropagation(); requestFollow('${u.id}')">Follow</button>`;
+          }
+        } else if (isCurrentUser) {
+          followBtn = `<span style="color: #666; font-size: 0.8rem;">(You)</span>`;
+        }
+
         return `
           <div class="user-card" onclick="window.location.href='?user=${u.id}'">
             <div class="user-card-avatar">${avatar}</div>
             <div class="user-card-name">${escapeHtml(u.displayName || 'Anonymous')}</div>
             <div class="user-card-stats">${count} resolution${count !== 1 ? 's' : ''}</div>
+            <div class="user-card-follow">${followBtn}</div>
           </div>
         `;
       }).join('');
