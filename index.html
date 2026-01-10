@@ -2588,6 +2588,75 @@
       document.getElementById('community-view').classList.remove('hidden');
     };
 
+    // Admin function to migrate all existing resolutions to have AI-detected categories
+    // Run this from browser console: migrateCategories()
+    window.migrateCategories = async () => {
+      if (!currentUser) {
+        console.error('Please sign in first');
+        return;
+      }
+
+      console.log('🚀 Starting category migration...');
+
+      const resSnap = await getDocs(collection(db, 'resolutions'));
+      const allResolutions = resSnap.docs.map(d => ({ id: d.id, ...d.data() }));
+
+      console.log(`Found ${allResolutions.length} resolutions to process`);
+
+      let updated = 0;
+      let skipped = 0;
+      let errors = 0;
+
+      for (const res of allResolutions) {
+        // Skip if already has a valid category (not 'other')
+        if (res.category && res.category !== 'other') {
+          console.log(`⏭️ Skipping "${res.title}" - already categorized as ${res.category}`);
+          skipped++;
+          continue;
+        }
+
+        try {
+          // Call the AI to detect category
+          const response = await fetch('/.netlify/functions/detect-category', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title: res.title, description: res.description || '' })
+          });
+
+          if (response.ok) {
+            const data = await response.json();
+            const category = data.category || 'other';
+
+            // Update the resolution
+            await updateDoc(doc(db, 'resolutions', res.id), { category });
+            console.log(`✅ Updated "${res.title}" -> ${category}`);
+            updated++;
+          } else {
+            console.error(`❌ Failed to get category for "${res.title}"`);
+            errors++;
+          }
+
+          // Small delay to avoid rate limiting
+          await new Promise(r => setTimeout(r, 300));
+
+        } catch (error) {
+          console.error(`❌ Error processing "${res.title}":`, error);
+          errors++;
+        }
+      }
+
+      console.log('\n=== 🎉 Migration Complete ===');
+      console.log(`✅ Updated: ${updated}`);
+      console.log(`⏭️ Skipped: ${skipped}`);
+      console.log(`❌ Errors: ${errors}`);
+
+      // Refresh the UI
+      if (typeof renderResolutions === 'function') renderResolutions();
+      if (typeof loadCommunity === 'function') loadCommunity();
+
+      return { updated, skipped, errors };
+    };
+
   </script>
 </body>
 </html>
