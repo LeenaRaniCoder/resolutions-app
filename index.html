@@ -2375,22 +2375,25 @@
       }
     }
 
-    // AI-based category detection using the Cloudflare Worker
+    // AI-based category detection - uses keyword detection as Cloudflare Worker doesn't return category
     async function detectCategoryAI(title, description) {
-      try {
-        const response = await fetch(ANALYZE_GOAL_URL, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ title, description })
-        });
-        if (response.ok) {
-          const data = await response.json();
-          return data.category || 'other';
-        }
-      } catch (error) {
-        console.error('Category detection error:', error);
-      }
-      // Fallback to 'other' if AI fails
+      // Use keyword-based detection
+      return detectCategoryFromText(title, description);
+    }
+
+    // Keyword-based category detection
+    function detectCategoryFromText(title, description) {
+      const text = (title + ' ' + (description || '')).toLowerCase();
+
+      const healthKeywords = ['weight', 'exercise', 'gym', 'run', 'running', 'health', 'fit', 'fitness', 'diet', 'sleep', 'workout', 'yoga', 'meditation', 'walk', 'walking', 'steps', 'body', 'muscle', 'cardio', 'dance', 'dancing', 'sugar', 'eat', 'eating', 'food', 'vegetable', 'fruit', 'nutrition', 'pounds', 'lbs', 'kg'];
+      const careerKeywords = ['money', 'career', 'job', 'salary', 'business', 'promotion', 'invest', 'save', 'saving', 'income', 'work', 'professional', 'retire', 'retirement', 'college', 'fund', 'financial', 'budget', 'debt', 'earn', 'side hustle', 'entrepreneur'];
+      const learningKeywords = ['learn', 'read', 'reading', 'study', 'course', 'book', 'books', 'language', 'skill', 'education', 'degree', 'certification', 'class', 'tutorial', 'practice', 'web development', 'programming', 'code', 'coding', 'website'];
+      const familyKeywords = ['family', 'balance', 'relationship', 'friends', 'social', 'travel', 'hobby', 'vacation', 'time off', 'relax', 'quality time', 'parents', 'kids', 'spouse', 'bucket list', 'activities', 'adventure'];
+
+      if (healthKeywords.some(k => text.includes(k))) return 'health';
+      if (careerKeywords.some(k => text.includes(k))) return 'money_career';
+      if (learningKeywords.some(k => text.includes(k))) return 'learning';
+      if (familyKeywords.some(k => text.includes(k))) return 'family_life_balance';
       return 'other';
     }
 
@@ -2607,7 +2610,6 @@
 
       let updated = 0;
       let skipped = 0;
-      let errors = 0;
 
       for (const res of allResolutions) {
         // Skip if already has a valid category (not 'other') unless forcing
@@ -2617,46 +2619,24 @@
           continue;
         }
 
-        try {
-          // Use the Cloudflare Worker (same as main AI analysis) which returns category
-          const response = await fetch(ANALYZE_GOAL_URL, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title: res.title, description: res.description || '' })
-          });
+        // Detect category from keywords
+        const category = detectCategoryFromText(res.title, res.description);
 
-          if (response.ok) {
-            const data = await response.json();
-            const category = data.category || 'other';
-
-            // Update the resolution
-            await updateDoc(doc(db, 'resolutions', res.id), { category });
-            console.log(`✅ Updated "${res.title}" -> ${category}`);
-            updated++;
-          } else {
-            console.error(`❌ Failed to get category for "${res.title}"`);
-            errors++;
-          }
-
-          // Small delay to avoid rate limiting
-          await new Promise(r => setTimeout(r, 500));
-
-        } catch (error) {
-          console.error(`❌ Error processing "${res.title}":`, error);
-          errors++;
-        }
+        // Update the resolution
+        await updateDoc(doc(db, 'resolutions', res.id), { category });
+        console.log(`✅ Updated "${res.title}" -> ${category}`);
+        updated++;
       }
 
       console.log('\n=== 🎉 Migration Complete ===');
       console.log(`✅ Updated: ${updated}`);
       console.log(`⏭️ Skipped: ${skipped}`);
-      console.log(`❌ Errors: ${errors}`);
 
       // Refresh the UI
-      if (typeof renderResolutions === 'function') renderResolutions();
-      if (typeof loadCommunity === 'function') loadCommunity();
+      renderResolutions();
+      loadCommunity();
 
-      return { updated, skipped, errors };
+      return { updated, skipped };
     };
 
     // Debug function to check current categories in database
