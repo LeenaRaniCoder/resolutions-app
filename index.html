@@ -449,12 +449,114 @@
     .loading { text-align: center; color: white; padding: 2rem; }
     .spinner { width: 40px; height: 40px; border: 4px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 1rem; }
     @keyframes spin { to { transform: rotate(360deg); } }
-  </style>
+
+    /* Decorative Elements */
+    .header-decoration {
+      text-align: center;
+      margin-bottom: 0.5rem;
+    }
+    .header-icon {
+      font-size: 3.5rem;
+      display: inline-block;
+      animation: float 3s ease-in-out infinite;
+      filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+    }
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    .sparkles {
+      position: absolute;
+      pointer-events: none;
+    }
+    .sparkle {
+      position: absolute;
+      font-size: 1.5rem;
+      animation: sparkle 2s ease-in-out infinite;
+      opacity: 0.8;
+    }
+    .sparkle:nth-child(1) { top: 10%; left: 5%; animation-delay: 0s; }
+    .sparkle:nth-child(2) { top: 20%; right: 8%; animation-delay: 0.5s; }
+    .sparkle:nth-child(3) { top: 60%; left: 3%; animation-delay: 1s; }
+    .sparkle:nth-child(4) { top: 70%; right: 5%; animation-delay: 1.5s; }
+    @keyframes sparkle {
+      0%, 100% { transform: scale(1) rotate(0deg); opacity: 0.6; }
+      50% { transform: scale(1.2) rotate(180deg); opacity: 1; }
+    }
+
+    /* Confetti Animation */
+    .confetti-container {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 9999;
+      overflow: hidden;
+    }
+    .confetti {
+      position: absolute;
+      width: 10px;
+      height: 10px;
+      animation: confetti-fall 3s ease-out forwards;
+    }
+    @keyframes confetti-fall {
+      0% { transform: translateY(-100%) rotate(0deg); opacity: 1; }
+      100% { transform: translateY(100vh) rotate(720deg); opacity: 0; }
+    }
+
+    /* Icon styles */
+    .nav-icon { margin-right: 0.35rem; font-size: 1.1rem; }
+    .stat-icon { font-size: 1.5rem; margin-bottom: 0.25rem; display: block; }
+    .section-icon { margin-right: 0.5rem; }
+
+    /* Inspiring gradients for completed cards */
+    .resolution-card.completed {
+      background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+      border-color: #10b981;
+      position: relative;
+      overflow: hidden;
+    }
+    .resolution-card.completed::before {
+      content: '🎉';
+      position: absolute;
+      top: -10px;
+      right: -10px;
+      font-size: 4rem;
+      opacity: 0.15;
+      transform: rotate(15deg);
+    }
+
+    /* Motivational empty state */
+    .empty-state-graphic {
+      font-size: 4rem;
+      margin-bottom: 1rem;
+      display: block;
+    }
+    .motivational-quote {
+      font-style: italic;
+      opacity: 0.9;
+      margin-top: 1rem;
+      font-size: 0.95rem;
+    }
+</style>
 </head>
 <body>
+  <!-- Decorative sparkles -->
+  <div class="sparkles">
+    <span class="sparkle">✨</span>
+    <span class="sparkle">⭐</span>
+    <span class="sparkle">✨</span>
+    <span class="sparkle">💫</span>
+  </div>
+
   <div class="container">
+    <div class="header-decoration">
+      <span class="header-icon">🎯</span>
+    </div>
     <h1>2026 Resolutions</h1>
-    <p class="subtitle">Track your goals, share your progress</p>
+    <p class="subtitle">Track your goals, share your progress, achieve greatness</p>
 
     <div id="loading" class="loading"><div class="spinner"></div><p>Loading...</p></div>
 
@@ -517,20 +619,20 @@
 
       <!-- Navigation Tabs -->
       <div class="nav-tabs">
-        <button class="nav-tab active" data-view="resolutions">My Resolutions</button>
-        <button class="nav-tab" data-view="feed">Activity Feed</button>
-        <button class="nav-tab" data-view="community">Community</button>
+        <button class="nav-tab active" data-view="resolutions"><span class="nav-icon">📋</span>My Goals</button>
+        <button class="nav-tab" data-view="feed"><span class="nav-icon">📰</span>Feed</button>
+        <button class="nav-tab" data-view="community"><span class="nav-icon">👥</span>Community</button>
       </div>
 
       <!-- My Resolutions View -->
       <div id="resolutions-view">
         <div class="stats">
-          <div class="stat-item"><div class="stat-value" id="total-count">0</div><div class="stat-label">Total</div></div>
-          <div class="stat-item"><div class="stat-value" id="completed-count">0</div><div class="stat-label">Completed</div></div>
-          <div class="stat-item"><div class="stat-value" id="avg-progress">0%</div><div class="stat-label">Avg Progress</div></div>
+          <div class="stat-item"><span class="stat-icon">🎯</span><div class="stat-value" id="total-count">0</div><div class="stat-label">Total</div></div>
+          <div class="stat-item"><span class="stat-icon">🏆</span><div class="stat-value" id="completed-count">0</div><div class="stat-label">Completed</div></div>
+          <div class="stat-item"><span class="stat-icon">📈</span><div class="stat-value" id="avg-progress">0%</div><div class="stat-label">Avg Progress</div></div>
         </div>
         <div class="add-form">
-          <h2 id="form-title">Add Resolution</h2>
+          <h2 id="form-title">✨ Add Resolution</h2>
           <form id="resolution-form">
             <input type="hidden" id="edit-id">
             <div class="form-group"><label for="title">Resolution</label><input type="text" id="title" placeholder="e.g., Exercise 3 times a week" required></div>
@@ -658,7 +760,13 @@
         profileContainer.classList.add('hidden');
         document.querySelector('.nav-tabs').classList.remove('hidden');
         document.querySelector('.add-form').classList.add('hidden');
-        document.getElementById('resolutions-list').innerHTML = '<div class="empty-state"><h3>Sign in to add your resolutions</h3></div>';
+        document.getElementById('resolutions-list').innerHTML = `
+          <div class="empty-state">
+            <span class="empty-state-graphic">✨</span>
+            <h3>Ready to Transform Your Year?</h3>
+            <p>Sign in to create resolutions and track your progress!</p>
+          </div>
+        `;
         document.querySelector('.user-header').classList.add('hidden');
         document.getElementById('guest-header').classList.remove('hidden');
         document.getElementById('follow-requests-section').classList.add('hidden');
@@ -905,7 +1013,14 @@
       unsubscribeActivities = onSnapshot(q, (snapshot) => {
         const activities = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
         if (activities.length === 0) {
-          container.innerHTML = '<div class="empty-state"><h2>No activity yet</h2><p>Activity will appear here as users add and update resolutions.</p></div>';
+          container.innerHTML = `
+            <div class="empty-state">
+              <span class="empty-state-graphic">🌱</span>
+              <h2>The Journey Begins</h2>
+              <p>Activity will appear here as the community works on their goals.</p>
+              <p class="motivational-quote">"Every accomplishment starts with the decision to try." — John F. Kennedy</p>
+            </div>
+          `;
           return;
         }
         container.innerHTML = activities.map(a => renderActivityCard(a)).join('');
@@ -1048,7 +1163,13 @@
       const users = usersSnap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
 
       if (users.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h2>No users yet</h2></div>';
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-state-graphic">👥</span>
+            <h2>Be the First!</h2>
+            <p>You're pioneering this community. Others will join soon!</p>
+          </div>
+        `;
         return;
       }
 
@@ -1056,8 +1177,10 @@
       if (!currentUser) {
         container.innerHTML = `
           <div class="empty-state">
+            <span class="empty-state-graphic">🌍</span>
             <h2>${users.length} Community Member${users.length !== 1 ? 's' : ''}</h2>
             <p>Sign in to see who's working on their resolutions and follow them!</p>
+            <p class="motivational-quote">"Alone we can do so little; together we can do so much." — Helen Keller</p>
           </div>
         `;
         return;
@@ -1147,7 +1270,14 @@
     function renderResolutions() {
       const container = document.getElementById('resolutions-list');
       if (resolutions.length === 0) {
-        container.innerHTML = '<div class="empty-state"><h2>No resolutions yet</h2><p>Add your first resolution above!</p></div>';
+        container.innerHTML = `
+          <div class="empty-state">
+            <span class="empty-state-graphic">🚀</span>
+            <h2>Start Your Journey</h2>
+            <p>Add your first resolution and turn your dreams into reality!</p>
+            <p class="motivational-quote">"The secret of getting ahead is getting started." — Mark Twain</p>
+          </div>
+        `;
         return;
       }
       container.innerHTML = resolutions.map(res => renderResolutionCard(res, true)).join('');
@@ -1323,6 +1453,44 @@
 
     // Helpers
     function escapeHtml(text) { const div = document.createElement('div'); div.textContent = text || ''; return div.innerHTML; }
+
+    // Confetti celebration animation
+    function showConfetti() {
+      const container = document.createElement('div');
+      container.className = 'confetti-container';
+      document.body.appendChild(container);
+
+      const colors = ['#6366f1', '#8b5cf6', '#a855f7', '#10b981', '#f59e0b', '#ef4444', '#ec4899'];
+      const emojis = ['🎉', '🎊', '⭐', '✨', '🌟', '💫', '🏆'];
+
+      // Create confetti pieces
+      for (let i = 0; i < 50; i++) {
+        const confetti = document.createElement('div');
+        confetti.className = 'confetti';
+        confetti.style.left = Math.random() * 100 + '%';
+        confetti.style.animationDelay = Math.random() * 0.5 + 's';
+        confetti.style.animationDuration = (2 + Math.random() * 2) + 's';
+
+        // Randomly choose between colored square or emoji
+        if (Math.random() > 0.3) {
+          confetti.style.background = colors[Math.floor(Math.random() * colors.length)];
+          confetti.style.borderRadius = Math.random() > 0.5 ? '50%' : '2px';
+          confetti.style.width = (8 + Math.random() * 8) + 'px';
+          confetti.style.height = (8 + Math.random() * 8) + 'px';
+        } else {
+          confetti.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+          confetti.style.fontSize = (16 + Math.random() * 16) + 'px';
+          confetti.style.background = 'none';
+          confetti.style.width = 'auto';
+          confetti.style.height = 'auto';
+        }
+
+        container.appendChild(confetti);
+      }
+
+      // Remove after animation
+      setTimeout(() => container.remove(), 4000);
+    }
     function formatDate(ts) { if (!ts) return ''; const d = ts.toDate ? ts.toDate() : new Date(ts); return d.toLocaleDateString(); }
     function formatTimeAgo(ts) {
       if (!ts) return '';
@@ -1704,6 +1872,7 @@
       if (newProgress === 100 && oldProgress !== 100) {
         updates.completedAt = serverTimestamp();
         await logActivity('completion', { id, title: data.title });
+        showConfetti(); // Celebrate!
       } else if (newProgress < 100 && oldProgress === 100) {
         // Un-complete if dropped below 100%
         updates.completedAt = null;
