@@ -43,14 +43,18 @@ export default async (request, context) => {
     }
 
     const currentYear = new Date().getFullYear();
-    const prompt = `You are a goal-setting coach. Analyze this New Year's resolution and help make it SMART (Specific, Measurable, Achievable, Relevant, Time-bound).
+    const prompt = `You are an expert goal-setting coach specializing in behavioral psychology, habit formation, and strategic planning. Analyze this New Year's resolution and transform it into a comprehensive, actionable plan.
 
 Resolution: "${title}"
 ${description ? `Description: "${description}"` : ''}
 
-Respond in JSON format with this exact structure:
+First, detect the goal category (health, money/career, family/life_balance, learning, or other).
+
+Then respond in JSON format with this exact structure:
+
 {
-  "isSmart": boolean (true if the goal is already SMART enough),
+  "category": "health" | "money_career" | "family_life_balance" | "learning" | "other",
+  "isSmart": boolean,
   "analysis": {
     "specific": { "pass": boolean, "feedback": "brief feedback" },
     "measurable": { "pass": boolean, "feedback": "brief feedback" },
@@ -58,17 +62,116 @@ Respond in JSON format with this exact structure:
     "relevant": { "pass": boolean, "feedback": "brief feedback" },
     "timeBound": { "pass": boolean, "feedback": "brief feedback" }
   },
-  "improvedGoal": "A more specific, measurable version of the goal (or the same if already good)",
-  "improvedDescription": "A brief description with clear success criteria",
+  "improvedGoal": "A SMART rewrite of the goal",
+  "improvedDescription": "Clear success criteria and what achieving this looks like",
+  "identityStatement": "Who you become by achieving this (e.g., 'I am someone who...')",
+  "quarterlyPlan": [
+    {
+      "quarter": "Q1",
+      "theme": "Foundation Building",
+      "targetPercent": 25,
+      "targetDate": "${currentYear}-03-31",
+      "successMetrics": ["Specific measurable outcome 1", "Outcome 2"],
+      "leadingIndicators": ["Weekly/monthly actions that predict success"],
+      "laggingIndicators": ["Results that prove it's working"],
+      "monthlyProgression": {
+        "month1": "Focus and actions for January",
+        "month2": "Focus and actions for February",
+        "month3": "Focus and actions for March"
+      }
+    },
+    {
+      "quarter": "Q2",
+      "theme": "Building Momentum",
+      "targetPercent": 50,
+      "targetDate": "${currentYear}-06-30",
+      "successMetrics": [],
+      "leadingIndicators": [],
+      "laggingIndicators": [],
+      "monthlyProgression": { "month1": "", "month2": "", "month3": "" }
+    },
+    {
+      "quarter": "Q3",
+      "theme": "Acceleration",
+      "targetPercent": 75,
+      "targetDate": "${currentYear}-09-30",
+      "successMetrics": [],
+      "leadingIndicators": [],
+      "laggingIndicators": [],
+      "monthlyProgression": { "month1": "", "month2": "", "month3": "" }
+    },
+    {
+      "quarter": "Q4",
+      "theme": "Completion & Sustainability",
+      "targetPercent": 100,
+      "targetDate": "${currentYear}-12-31",
+      "successMetrics": [],
+      "leadingIndicators": [],
+      "laggingIndicators": [],
+      "monthlyProgression": { "month1": "", "month2": "", "month3": "" }
+    }
+  ],
+  "risks": [
+    {
+      "risk": "Description of failure point 1",
+      "likelihood": "high" | "medium" | "low",
+      "mitigation": "How to prevent or recover from this"
+    },
+    {
+      "risk": "Description of failure point 2",
+      "likelihood": "high" | "medium" | "low",
+      "mitigation": "How to prevent or recover from this"
+    },
+    {
+      "risk": "Description of failure point 3",
+      "likelihood": "high" | "medium" | "low",
+      "mitigation": "How to prevent or recover from this"
+    }
+  ],
+  "trackingSystem": {
+    "type": "daily_checklist" | "weekly_scorecard" | "dashboard" | "habit_tracker",
+    "description": "How to track progress simply",
+    "keyMetrics": ["What to measure", "What to measure"],
+    "reviewCadence": "When to review (daily/weekly/monthly)"
+  },
+  "minimumViableProgress": {
+    "description": "The bare minimum to maintain momentum on busy/hard weeks",
+    "timeRequired": "X minutes",
+    "actions": ["Simple action 1", "Simple action 2"]
+  },
+  "categorySpecific": {
+    // For health goals:
+    "habitStack": "Existing habit to attach this to (After I [existing habit], I will [new habit])",
+    "identityShift": "The identity-based behavior change framing",
+
+    // For money/career goals:
+    "skillMilestones": ["Skill to acquire by Q1", "Skill by Q2", etc.],
+    "leveragePoints": ["High-impact actions that multiply results"],
+
+    // For family/life balance goals:
+    "sustainabilityConstraints": ["Boundaries to prevent burnout"],
+    "recoveryProtocols": ["What to do when overwhelmed"],
+
+    // For learning goals:
+    "retentionLoops": ["How to retain what you learn"],
+    "practiceSchedule": "Spaced repetition or practice plan"
+  },
   "suggestedMilestones": [
-    { "title": "milestone name", "targetPercent": 25, "targetDate": "${currentYear}-03-31" },
-    { "title": "milestone name", "targetPercent": 50, "targetDate": "${currentYear}-06-30" },
-    { "title": "milestone name", "targetPercent": 75, "targetDate": "${currentYear}-09-30" },
-    { "title": "milestone name", "targetPercent": 100, "targetDate": "${currentYear}-12-31" }
+    { "title": "Q1: [milestone name]", "targetPercent": 25, "targetDate": "${currentYear}-03-31" },
+    { "title": "Q2: [milestone name]", "targetPercent": 50, "targetDate": "${currentYear}-06-30" },
+    { "title": "Q3: [milestone name]", "targetPercent": 75, "targetDate": "${currentYear}-09-30" },
+    { "title": "Q4: [milestone name]", "targetPercent": 100, "targetDate": "${currentYear}-12-31" }
   ]
 }
 
-Keep milestones practical and achievable within ${currentYear}. Only include 3-4 milestones.`;
+IMPORTANT GUIDELINES:
+- Be specific and actionable, not generic
+- Include only the categorySpecific fields relevant to the detected category
+- Make the minimum viable progress truly minimal (5-10 minutes)
+- Leading indicators should be things within the person's control
+- Lagging indicators should be observable results
+- Risks should be realistic failure points, not generic obstacles
+- The identity statement should be present-tense and empowering`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -80,7 +183,7 @@ Keep milestones practical and achievable within ${currentYear}. Only include 3-4
         model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.7,
-        max_tokens: 1000,
+        max_tokens: 4000,
       }),
     });
 

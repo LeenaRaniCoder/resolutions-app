@@ -332,6 +332,27 @@
     .ai-section { margin-bottom: 1.25rem; }
     .ai-section h4 { font-size: 0.9rem; color: #667eea; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem; }
     .ai-section p { font-size: 0.95rem; color: #333; line-height: 1.5; }
+    .ai-section-collapsible { border: 1px solid #e5e7eb; border-radius: 10px; margin-bottom: 0.75rem; overflow: hidden; }
+    .ai-section-header { background: #f9fafb; padding: 0.75rem 1rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 0.9rem; }
+    .ai-section-header:hover { background: #f3f4f6; }
+    .ai-section-content { padding: 1rem; display: none; }
+    .ai-section-content.expanded { display: block; }
+    .ai-identity-statement { background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); border-left: 4px solid #0ea5e9; padding: 1rem; border-radius: 0 8px 8px 0; font-style: italic; color: #0c4a6e; margin-bottom: 1rem; }
+    .ai-risk-item { background: #fef2f2; border-left: 4px solid #ef4444; padding: 0.75rem 1rem; border-radius: 0 8px 8px 0; margin-bottom: 0.5rem; }
+    .ai-risk-item.medium { background: #fffbeb; border-left-color: #f59e0b; }
+    .ai-risk-item.low { background: #f0fdf4; border-left-color: #22c55e; }
+    .ai-risk-title { font-weight: 600; font-size: 0.85rem; color: #374151; }
+    .ai-risk-mitigation { font-size: 0.8rem; color: #6b7280; margin-top: 0.25rem; }
+    .ai-mvp-box { background: #fef3c7; border: 2px dashed #f59e0b; border-radius: 10px; padding: 1rem; }
+    .ai-mvp-time { display: inline-block; background: #f59e0b; color: white; padding: 0.25rem 0.5rem; border-radius: 4px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .ai-tracking-box { background: #ecfdf5; border: 1px solid #10b981; border-radius: 10px; padding: 1rem; }
+    .ai-quarterly-card { background: white; border: 1px solid #e5e7eb; border-radius: 10px; padding: 1rem; margin-bottom: 0.75rem; }
+    .ai-quarterly-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem; }
+    .ai-quarterly-badge { background: #6366f1; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; }
+    .ai-quarterly-theme { font-weight: 600; color: #374151; }
+    .ai-indicator-list { font-size: 0.8rem; color: #6b7280; }
+    .ai-indicator-list li { margin-bottom: 0.25rem; }
+    .ai-category-badge { display: inline-block; background: #8b5cf6; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; }
     .ai-improved-goal {
       background: #f0f4ff;
       border: 2px solid #667eea;
@@ -1916,14 +1937,23 @@
     }
 
     function renderAISuggestions(data) {
-      const a = data.analysis;
+      const a = data.analysis || {};
       const badges = ['specific', 'measurable', 'achievable', 'relevant', 'timeBound'].map(key => {
-        const item = a[key];
+        const item = a[key] || { pass: false, feedback: '' };
         const label = key.charAt(0).toUpperCase();
         return `<span class="smart-badge ${item.pass ? 'pass' : 'fail'}" title="${item.feedback}">${label}</span>`;
       }).join('');
 
-      const milestonesHtml = data.suggestedMilestones.map(m => `
+      const categoryLabels = {
+        health: '🏃 Health',
+        money_career: '💼 Career/Money',
+        family_life_balance: '👨‍👩‍👧 Life Balance',
+        learning: '📚 Learning',
+        other: '🎯 Goal'
+      };
+
+      // Milestones from suggestedMilestones
+      const milestonesHtml = (data.suggestedMilestones || []).map(m => `
         <div class="ai-milestone">
           <div class="ai-milestone-info">
             <div class="ai-milestone-title">${escapeHtml(m.title)}</div>
@@ -1932,14 +1962,77 @@
         </div>
       `).join('');
 
+      // Risks section
+      const risksHtml = (data.risks || []).map(r => `
+        <div class="ai-risk-item ${r.likelihood || 'high'}">
+          <div class="ai-risk-title">⚠️ ${escapeHtml(r.risk)}</div>
+          <div class="ai-risk-mitigation">💡 ${escapeHtml(r.mitigation)}</div>
+        </div>
+      `).join('');
+
+      // Minimum viable progress
+      const mvp = data.minimumViableProgress || {};
+      const mvpHtml = mvp.description ? `
+        <div class="ai-mvp-box">
+          <span class="ai-mvp-time">⏱️ ${mvp.timeRequired || '5-10 min'}</span>
+          <p style="font-weight: 600; margin-bottom: 0.5rem;">${escapeHtml(mvp.description)}</p>
+          <ul style="margin: 0; padding-left: 1.25rem; font-size: 0.85rem;">
+            ${(mvp.actions || []).map(a => `<li>${escapeHtml(a)}</li>`).join('')}
+          </ul>
+        </div>
+      ` : '';
+
+      // Tracking system
+      const tracking = data.trackingSystem || {};
+      const trackingHtml = tracking.description ? `
+        <div class="ai-tracking-box">
+          <p style="font-weight: 600; margin-bottom: 0.5rem;">📊 ${escapeHtml(tracking.description)}</p>
+          <p style="font-size: 0.8rem; color: #065f46;">Review: ${tracking.reviewCadence || 'Weekly'}</p>
+          ${tracking.keyMetrics ? `<p style="font-size: 0.8rem; color: #065f46;">Track: ${tracking.keyMetrics.join(', ')}</p>` : ''}
+        </div>
+      ` : '';
+
+      // Category-specific insights
+      const catSpecific = data.categorySpecific || {};
+      let categoryInsightsHtml = '';
+      if (data.category === 'health') {
+        categoryInsightsHtml = `
+          ${catSpecific.habitStack ? `<p><strong>🔗 Habit Stack:</strong> ${escapeHtml(catSpecific.habitStack)}</p>` : ''}
+          ${catSpecific.identityShift ? `<p><strong>🧠 Identity Shift:</strong> ${escapeHtml(catSpecific.identityShift)}</p>` : ''}
+        `;
+      } else if (data.category === 'money_career') {
+        categoryInsightsHtml = `
+          ${catSpecific.skillMilestones ? `<p><strong>📈 Skills to Build:</strong> ${catSpecific.skillMilestones.join(' → ')}</p>` : ''}
+          ${catSpecific.leveragePoints ? `<p><strong>🎯 Leverage Points:</strong> ${catSpecific.leveragePoints.join(', ')}</p>` : ''}
+        `;
+      } else if (data.category === 'family_life_balance') {
+        categoryInsightsHtml = `
+          ${catSpecific.sustainabilityConstraints ? `<p><strong>🛡️ Boundaries:</strong> ${catSpecific.sustainabilityConstraints.join(', ')}</p>` : ''}
+          ${catSpecific.recoveryProtocols ? `<p><strong>🔄 Recovery Plan:</strong> ${catSpecific.recoveryProtocols.join(', ')}</p>` : ''}
+        `;
+      } else if (data.category === 'learning') {
+        categoryInsightsHtml = `
+          ${catSpecific.retentionLoops ? `<p><strong>🧠 Retention Strategy:</strong> ${catSpecific.retentionLoops.join(', ')}</p>` : ''}
+          ${catSpecific.practiceSchedule ? `<p><strong>📅 Practice Schedule:</strong> ${escapeHtml(catSpecific.practiceSchedule)}</p>` : ''}
+        `;
+      }
+
       document.getElementById('ai-modal-body').innerHTML = `
         <div class="ai-section">
+          <span class="ai-category-badge">${categoryLabels[data.category] || '🎯 Goal'}</span>
           <h4>📊 SMART Analysis</h4>
           <p>${badges}</p>
           <p style="margin-top: 0.5rem; font-size: 0.85rem; color: #666;">
             ${data.isSmart ? '✅ Your goal is already SMART!' : '💡 Here\'s how to make it better:'}
           </p>
         </div>
+
+        ${data.identityStatement ? `
+          <div class="ai-identity-statement">
+            "${escapeHtml(data.identityStatement)}"
+          </div>
+        ` : ''}
+
         ${!data.isSmart ? `
           <div class="ai-section">
             <h4>✨ Improved Goal</h4>
@@ -1947,10 +2040,59 @@
             ${data.improvedDescription ? `<p style="margin-top: 0.5rem; font-size: 0.9rem;">${escapeHtml(data.improvedDescription)}</p>` : ''}
           </div>
         ` : ''}
+
         <div class="ai-section">
-          <h4>🎯 Suggested Milestones</h4>
+          <h4>🎯 Quarterly Milestones</h4>
           ${milestonesHtml}
         </div>
+
+        ${risksHtml ? `
+          <div class="ai-section-collapsible">
+            <div class="ai-section-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
+              <span>⚠️ Top 3 Risks & Mitigations</span>
+              <span>▼</span>
+            </div>
+            <div class="ai-section-content">
+              ${risksHtml}
+            </div>
+          </div>
+        ` : ''}
+
+        ${mvpHtml ? `
+          <div class="ai-section-collapsible">
+            <div class="ai-section-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
+              <span>🏃 Minimum Viable Progress (Busy Week Mode)</span>
+              <span>▼</span>
+            </div>
+            <div class="ai-section-content">
+              ${mvpHtml}
+            </div>
+          </div>
+        ` : ''}
+
+        ${trackingHtml ? `
+          <div class="ai-section-collapsible">
+            <div class="ai-section-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
+              <span>📊 Tracking System</span>
+              <span>▼</span>
+            </div>
+            <div class="ai-section-content">
+              ${trackingHtml}
+            </div>
+          </div>
+        ` : ''}
+
+        ${categoryInsightsHtml ? `
+          <div class="ai-section-collapsible">
+            <div class="ai-section-header" onclick="this.nextElementSibling.classList.toggle('expanded')">
+              <span>${categoryLabels[data.category] || '🎯'} Category Insights</span>
+              <span>▼</span>
+            </div>
+            <div class="ai-section-content">
+              ${categoryInsightsHtml}
+            </div>
+          </div>
+        ` : ''}
       `;
       document.getElementById('ai-modal-footer').classList.remove('hidden');
     }
