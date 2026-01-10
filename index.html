@@ -27,7 +27,40 @@
       text-shadow: 0 2px 10px rgba(0,0,0,0.15);
     }
     @media (min-width: 640px) { h1 { font-size: 2.75rem; } }
-    .subtitle { color: rgba(255,255,255,0.85); text-align: center; margin-bottom: 1.5rem; font-weight: 500; }
+    .subtitle { color: rgba(255,255,255,0.85); text-align: center; margin-bottom: 0.75rem; font-weight: 500; font-size: 1.1rem; }
+    .tagline { color: rgba(255,255,255,0.75); text-align: center; margin-bottom: 1.5rem; font-size: 0.95rem; font-style: italic; }
+
+    /* Feature Highlights */
+    .feature-highlights {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.5rem;
+      margin-bottom: 1.5rem;
+    }
+    .feature-pill {
+      background: rgba(255,255,255,0.15);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 50px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      transition: all 0.2s ease;
+    }
+    .feature-pill:hover {
+      background: rgba(255,255,255,0.25);
+      transform: translateY(-2px);
+    }
+    .feature-pill .pill-icon {
+      font-size: 1rem;
+    }
+    @media (max-width: 480px) {
+      .feature-pill { font-size: 0.75rem; padding: 0.4rem 0.8rem; }
+    }
 
     /* Navigation Tabs */
     .nav-tabs {
@@ -556,7 +589,16 @@
       <span class="header-icon">🎯</span>
     </div>
     <h1>2026 Resolutions</h1>
-    <p class="subtitle">Track your goals, share your progress, achieve greatness</p>
+    <p class="subtitle">Transform your goals into achievements with AI-powered guidance</p>
+    <p class="tagline">"A goal without a plan is just a wish" — Antoine de Saint-Exupéry</p>
+
+    <div class="feature-highlights">
+      <div class="feature-pill"><span class="pill-icon">🤖</span> AI SMART Goal Coach</div>
+      <div class="feature-pill"><span class="pill-icon">📊</span> Milestone Tracking</div>
+      <div class="feature-pill"><span class="pill-icon">👥</span> Social Accountability</div>
+      <div class="feature-pill"><span class="pill-icon">📰</span> Activity Feed</div>
+      <div class="feature-pill"><span class="pill-icon">🎉</span> Celebrations</div>
+    </div>
 
     <div id="loading" class="loading"><div class="spinner"></div><p>Loading...</p></div>
 
