@@ -330,6 +330,14 @@
         </div>
       </div>
 
+      <!-- Guest Header (shown when not logged in) -->
+      <div class="user-header guest-header hidden" id="guest-header">
+        <div class="user-info">
+          <div>👋 Welcome! Browse resolutions or sign in to create your own.</div>
+        </div>
+        <button class="btn btn-small" id="guest-signin-btn">Sign In</button>
+      </div>
+
       <!-- Navigation Tabs -->
       <div class="nav-tabs">
         <button class="nav-tab active" data-view="resolutions">My Resolutions</button>
@@ -452,17 +460,41 @@
         authContainer.classList.add('hidden');
         appContainer.classList.remove('hidden');
         profileContainer.classList.add('hidden');
+        document.querySelector('.nav-tabs').classList.remove('hidden');
+        document.querySelector('.add-form').classList.remove('hidden');
+        document.querySelector('.user-header').classList.remove('hidden');
+        document.getElementById('guest-header').classList.add('hidden');
+        document.querySelector('.stats').classList.remove('hidden');
         updateUserUI();
         subscribeToResolutions();
         await ensureUserDocument();
       } else {
         currentUser = null;
-        authContainer.classList.remove('hidden');
-        appContainer.classList.add('hidden');
+        // Show app but with limited access (feed and community only)
+        authContainer.classList.add('hidden');
+        appContainer.classList.remove('hidden');
         profileContainer.classList.add('hidden');
+        document.querySelector('.nav-tabs').classList.remove('hidden');
+        document.querySelector('.add-form').classList.add('hidden');
+        document.getElementById('resolutions-list').innerHTML = '<div class="empty-state"><h3>Sign in to add your resolutions</h3></div>';
+        document.querySelector('.user-header').classList.add('hidden');
+        document.getElementById('guest-header').classList.remove('hidden');
+        document.querySelector('.stats').classList.add('hidden');
+        // Default to feed view for non-logged in users
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelector('.nav-tab[data-view="feed"]').classList.add('active');
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.add('hidden'));
+        document.getElementById('feed-view').classList.remove('hidden');
+        loadActivityFeed();
         if (unsubscribeResolutions) unsubscribeResolutions();
-        if (unsubscribeActivities) unsubscribeActivities();
       }
+    });
+
+    // Guest sign-in button
+    document.getElementById('guest-signin-btn').addEventListener('click', () => {
+      document.getElementById('guest-header').classList.add('hidden');
+      appContainer.classList.add('hidden');
+      authContainer.classList.remove('hidden');
     });
 
     async function ensureUserDocument() {
