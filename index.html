@@ -2375,10 +2375,10 @@
       }
     }
 
-    // AI-based category detection
+    // AI-based category detection using the Cloudflare Worker
     async function detectCategoryAI(title, description) {
       try {
-        const response = await fetch('/.netlify/functions/detect-category', {
+        const response = await fetch(ANALYZE_GOAL_URL, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ title, description })
@@ -2618,8 +2618,8 @@
         }
 
         try {
-          // Call the AI to detect category
-          const response = await fetch('/.netlify/functions/detect-category', {
+          // Use the Cloudflare Worker (same as main AI analysis) which returns category
+          const response = await fetch(ANALYZE_GOAL_URL, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title: res.title, description: res.description || '' })
@@ -2639,7 +2639,7 @@
           }
 
           // Small delay to avoid rate limiting
-          await new Promise(r => setTimeout(r, 300));
+          await new Promise(r => setTimeout(r, 500));
 
         } catch (error) {
           console.error(`❌ Error processing "${res.title}":`, error);
