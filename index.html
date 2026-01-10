@@ -376,6 +376,23 @@
     .ai-indicator-list { font-size: 0.8rem; color: #6b7280; }
     .ai-indicator-list li { margin-bottom: 0.25rem; }
     .ai-category-badge { display: inline-block; background: #8b5cf6; color: white; padding: 0.25rem 0.75rem; border-radius: 20px; font-size: 0.75rem; font-weight: 600; margin-bottom: 0.5rem; }
+
+    /* Category badges on resolution cards */
+    .category-badge { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 12px; font-size: 0.7rem; font-weight: 600; margin-bottom: 0.5rem; }
+    .category-badge.health { background: #dcfce7; color: #166534; }
+    .category-badge.money_career { background: #fef3c7; color: #92400e; }
+    .category-badge.family_life_balance { background: #fce7f3; color: #9d174d; }
+    .category-badge.learning { background: #dbeafe; color: #1e40af; }
+    .category-badge.other { background: #f3f4f6; color: #374151; }
+
+    /* Category badges on user cards in community */
+    .user-card-categories { display: flex; flex-wrap: wrap; gap: 0.25rem; justify-content: center; margin-top: 0.5rem; }
+    .user-category-chip { font-size: 0.6rem; padding: 0.15rem 0.4rem; border-radius: 8px; font-weight: 500; }
+    .user-category-chip.health { background: #dcfce7; color: #166534; }
+    .user-category-chip.money_career { background: #fef3c7; color: #92400e; }
+    .user-category-chip.family_life_balance { background: #fce7f3; color: #9d174d; }
+    .user-category-chip.learning { background: #dbeafe; color: #1e40af; }
+    .user-category-chip.other { background: #f3f4f6; color: #374151; }
     .ai-improved-goal {
       background: #f0f4ff;
       border: 2px solid #667eea;
@@ -1474,20 +1491,38 @@
         return;
       }
 
-      // Get resolution counts
+      // Get resolution counts and categories per user
       const userCounts = {};
+      const userCategories = {};
       const resSnap = await getDocs(collection(db, 'resolutions'));
       resSnap.docs.forEach(doc => {
         const data = doc.data();
         userCounts[data.userId] = (userCounts[data.userId] || 0) + 1;
+        if (!userCategories[data.userId]) userCategories[data.userId] = new Set();
+        if (data.category) userCategories[data.userId].add(data.category);
       });
+
+      // Category labels for chips
+      const categoryChipLabels = {
+        health: '🏃 Health',
+        money_career: '💼 Career',
+        family_life_balance: '👨‍👩‍👧 Balance',
+        learning: '📚 Learning',
+        other: '🎯 Other'
+      };
 
       container.innerHTML = users.map(u => {
         const avatar = u.photoURL ? `<img src="${u.photoURL}" alt="">` : escapeHtml((u.displayName || '?')[0].toUpperCase());
         const count = userCounts[u.id] || 0;
+        const categories = userCategories[u.id] || new Set();
         const isCurrentUser = currentUser && currentUser.uid === u.id;
         const isFollowing = followingUsers.has(u.id);
         const isPending = pendingRequests.has(u.id);
+
+        // Generate category chips
+        const categoryChips = Array.from(categories).map(cat =>
+          `<span class="user-category-chip ${cat}">${categoryChipLabels[cat] || '🎯 Other'}</span>`
+        ).join('');
 
         let followBtn = '';
         if (currentUser && !isCurrentUser) {
@@ -1507,6 +1542,7 @@
             <div class="user-card-avatar">${avatar}</div>
             <div class="user-card-name">${escapeHtml(u.displayName || 'Anonymous')}</div>
             <div class="user-card-stats">${count} resolution${count !== 1 ? 's' : ''}</div>
+            ${categoryChips ? `<div class="user-card-categories">${categoryChips}</div>` : ''}
             <div class="user-card-follow">${followBtn}</div>
           </div>
         `;
@@ -1592,6 +1628,18 @@
 
     function renderResolutionCard(res, isOwner) {
       const milestones = res.milestones || [];
+
+      // Category badge
+      const categoryLabels = {
+        health: '🏃 Health',
+        money_career: '💼 Career',
+        family_life_balance: '👨‍👩‍👧 Life Balance',
+        learning: '📚 Learning',
+        other: '🎯 Goal'
+      };
+      const category = res.category || 'other';
+      const categoryBadge = `<span class="category-badge ${category}">${categoryLabels[category] || '🎯 Goal'}</span>`;
+
       const milestonesHtml = milestones.length > 0 ? `
         <div class="milestones-display">
           ${milestones.map(m => {
@@ -1629,6 +1677,7 @@
 
       return `
         <div class="resolution-card ${res.progress === 100 ? 'completed' : ''}" data-id="${res.id}">
+          ${categoryBadge}
           <div class="resolution-header">
             <div class="resolution-title">${escapeHtml(res.title)}</div>
             ${isOwner ? `
@@ -2265,7 +2314,7 @@
       }
     });
 
-    async function saveResolution(title, description, editId, shareToFeed = true) {
+    async function saveResolution(title, description, editId, shareToFeed = true, category = null) {
       const milestones = editingMilestones.filter(m => m.title.trim()).map(m => ({
         id: m.id,
         title: m.title.trim(),
@@ -2274,14 +2323,18 @@
         completedAt: null
       }));
 
+      // Detect category from title/description if not provided
+      const detectedCategory = category || detectCategory(title, description);
+
       if (editId) {
-        await updateDoc(doc(db, 'resolutions', editId), { title, description, milestones });
+        await updateDoc(doc(db, 'resolutions', editId), { title, description, milestones, category: detectedCategory });
         resetForm();
       } else {
         const docRef = await addDoc(collection(db, 'resolutions'), {
           userId: currentUser.uid,
           userDisplayName: currentUser.displayName || currentUser.email.split('@')[0],
           title, description, progress: 0, isPublic: true, milestones,
+          category: detectedCategory,
           createdAt: serverTimestamp(), completedAt: null
         });
         if (shareToFeed) {
@@ -2289,6 +2342,21 @@
         }
         resetForm();
       }
+    }
+
+    // Simple category detection from keywords
+    function detectCategory(title, description) {
+      const text = (title + ' ' + (description || '')).toLowerCase();
+      const healthKeywords = ['weight', 'exercise', 'gym', 'run', 'health', 'fit', 'diet', 'sleep', 'workout', 'yoga', 'meditation', 'walk', 'steps', 'body', 'muscle', 'cardio'];
+      const careerKeywords = ['money', 'career', 'job', 'salary', 'business', 'promotion', 'invest', 'save', 'income', 'work', 'professional', 'skill', 'side hustle', 'entrepreneur'];
+      const familyKeywords = ['family', 'balance', 'relationship', 'friends', 'social', 'travel', 'hobby', 'vacation', 'time off', 'relax', 'quality time', 'parents', 'kids', 'spouse'];
+      const learningKeywords = ['learn', 'read', 'study', 'course', 'book', 'language', 'skill', 'education', 'degree', 'certification', 'class', 'tutorial', 'practice'];
+
+      if (healthKeywords.some(k => text.includes(k))) return 'health';
+      if (careerKeywords.some(k => text.includes(k))) return 'money_career';
+      if (learningKeywords.some(k => text.includes(k))) return 'learning';
+      if (familyKeywords.some(k => text.includes(k))) return 'family_life_balance';
+      return 'other';
     }
 
     // Update closeAIModal to allow saving original
@@ -2312,6 +2380,7 @@
       const title = aiSuggestions.improvedGoal;
       const description = aiSuggestions.improvedDescription || document.getElementById('description').value.trim();
       const shareToFeed = aiSuggestions._shareToFeed !== false;
+      const category = aiSuggestions.category || null;
       document.getElementById('title').value = title;
       document.getElementById('description').value = description;
       editingMilestones = aiSuggestions.suggestedMilestones.map((m, i) => ({
@@ -2323,7 +2392,7 @@
       document.getElementById('ai-modal').classList.add('hidden');
       // Save with suggestions
       isSaving = true;
-      await saveResolution(title, description, '', shareToFeed);
+      await saveResolution(title, description, '', shareToFeed, category);
       isSaving = false;
       aiSuggestions = null;
     };
