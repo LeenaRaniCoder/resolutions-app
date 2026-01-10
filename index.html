@@ -545,6 +545,25 @@
     .milestone-marker:hover { background: #6366f1; transform: translateX(-50%) scale(1.2); }
     .milestone-marker.completed { background: #10b981; }
 
+    /* Milestone date labels below progress bar */
+    .milestone-dates {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      margin-top: 0.5rem;
+      height: 1.25rem;
+    }
+    .milestone-date-label {
+      position: absolute;
+      transform: translateX(-50%);
+      font-size: 0.65rem;
+      color: #9ca3af;
+      white-space: nowrap;
+      font-weight: 500;
+    }
+    .milestone-date-label.completed { color: #10b981; }
+    .milestone-date-label.overdue { color: #ef4444; }
+
     /* Milestones display */
     .milestones-display { margin-top: 1rem; display: flex; flex-wrap: wrap; gap: 0.5rem; }
     .milestone-badge {
@@ -1605,7 +1624,8 @@
                 <input type="range" class="progress-slider" min="0" max="100" value="${res.progress}" ${sliderInput} onchange="window.updateProgress('${res.id}', this.value)" style="background: linear-gradient(to right, #8b5cf6 0%, #8b5cf6 ${res.progress}%, #e5e7eb ${res.progress}%, #e5e7eb 100%);">
                 <div class="milestone-markers">
                   ${milestones.map(m => {
-                    return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" onclick="window.snapToMilestone('${res.id}', ${m.targetPercent})" title="${m.title} (${m.targetPercent}%)"></div>`;
+                    const dateStr = m.targetDate ? new Date(m.targetDate.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                    return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" onclick="window.snapToMilestone('${res.id}', ${m.targetPercent})" title="${m.title} (${m.targetPercent}%)${dateStr ? ' - ' + dateStr : ''}"></div>`;
                   }).join('')}
                 </div>
               </div>
@@ -1614,11 +1634,25 @@
                 <div class="progress-fill" style="width: ${res.progress}%"></div>
                 <div class="milestone-markers">
                   ${milestones.map(m => {
-                    return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" title="${m.title} (${m.targetPercent}%)"></div>`;
+                    const dateStr = m.targetDate ? new Date(m.targetDate.seconds * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : '';
+                    return `<div class="milestone-marker ${res.progress >= m.targetPercent ? 'completed' : ''}" style="left: ${m.targetPercent}%" title="${m.title} (${m.targetPercent}%)${dateStr ? ' - ' + dateStr : ''}"></div>`;
                   }).join('')}
                 </div>
               </div>
             `}
+            ${milestones.some(m => m.targetDate) ? `
+              <div class="milestone-dates">
+                ${milestones.map(m => {
+                  if (!m.targetDate) return '';
+                  const isComplete = res.progress >= m.targetPercent;
+                  const date = new Date(m.targetDate.seconds * 1000);
+                  const isOverdue = !isComplete && date < new Date();
+                  const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                  const cls = isComplete ? 'completed' : (isOverdue ? 'overdue' : '');
+                  return `<span class="milestone-date-label ${cls}" style="left: ${m.targetPercent}%">${dateStr}</span>`;
+                }).join('')}
+              </div>
+            ` : ''}
           </div>
           ${milestonesHtml}
           ${isOwner ? `<div class="share-section"><button class="btn-share" onclick="window.shareResolution('${res.id}')">🔗 Copy Link</button></div>` : ''}
