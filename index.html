@@ -1244,24 +1244,23 @@
 
     window.deleteResolution = async (id) => {
       console.log('deleteResolution called with:', id);
-      if (confirm('Are you sure you want to delete this resolution?')) {
-        try {
-          console.log('Deleting associated activities...');
-          // Delete associated activities from the feed
-          const activitiesQuery = query(collection(db, 'activities'), where('resolutionId', '==', id));
-          const activitiesSnapshot = await getDocs(activitiesQuery);
-          console.log('Found', activitiesSnapshot.docs.length, 'activities to delete');
-          const deletePromises = activitiesSnapshot.docs.map(d => deleteDoc(d.ref));
-          await Promise.all(deletePromises);
+      try {
+        console.log('Deleting associated activities...');
+        // Delete associated activities from the feed
+        const activitiesQuery = query(collection(db, 'activities'), where('resolutionId', '==', id));
+        const activitiesSnapshot = await getDocs(activitiesQuery);
+        console.log('Found', activitiesSnapshot.docs.length, 'activities to delete');
+        const deletePromises = activitiesSnapshot.docs.map(d => deleteDoc(d.ref));
+        await Promise.all(deletePromises);
 
-          console.log('Deleting resolution...');
-          // Delete the resolution
-          await deleteDoc(doc(db, 'resolutions', id));
-          console.log('Resolution deleted successfully');
-        } catch (error) {
-          console.error('Delete error:', error);
-          alert('Failed to delete: ' + error.message);
-        }
+        console.log('Deleting resolution...');
+        // Delete the resolution
+        await deleteDoc(doc(db, 'resolutions', id));
+        console.log('Resolution deleted successfully');
+        alert('Resolution deleted!');
+      } catch (error) {
+        console.error('Delete error:', error);
+        alert('Failed to delete: ' + error.message);
       }
     };
 
