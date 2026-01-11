@@ -1316,6 +1316,14 @@
       const container = document.getElementById('activity-list');
       container.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
 
+      // Load all resolutions to get categories for old activities
+      const resSnap = await getDocs(collection(db, 'resolutions'));
+      const resolutionCategories = {};
+      resSnap.docs.forEach(doc => {
+        const data = doc.data();
+        resolutionCategories[doc.id] = data.category || detectCategoryFromText(data.title, data.description);
+      });
+
       const q = query(collection(db, 'activities'), orderBy('createdAt', 'desc'), limit(50));
       if (unsubscribeActivities) unsubscribeActivities();
 
@@ -1332,15 +1340,15 @@
           `;
           return;
         }
-        container.innerHTML = activities.map(a => renderActivityCard(a)).join('');
+        container.innerHTML = activities.map(a => renderActivityCard(a, resolutionCategories)).join('');
       });
     }
 
-    function renderActivityCard(activity) {
+    function renderActivityCard(activity, resolutionCategories = {}) {
       const icons = { new_resolution: '🎯', progress_update: '📈', comment: '💬', completion: '🎉' };
       const icon = icons[activity.type] || '📌';
 
-      // Category badge for feed
+      // Category badge for feed - use stored category, or look up from resolution, or detect from title
       const categoryLabels = {
         health: '🏃 Health',
         money_career: '💼 Career',
@@ -1348,7 +1356,10 @@
         learning: '📚 Learning',
         other: '🎯 Goal'
       };
-      const category = activity.resolutionCategory || 'other';
+      const category = activity.resolutionCategory
+        || resolutionCategories[activity.resolutionId]
+        || detectCategoryFromText(activity.resolutionTitle || '', '')
+        || 'other';
       const categoryBadge = `<span class="category-badge ${category}" style="margin-left: 0.5rem; vertical-align: middle;">${categoryLabels[category] || '🎯 Goal'}</span>`;
 
       // Determine if we should show real identity
